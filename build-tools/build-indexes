@@ -436,7 +436,7 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 			tierTable[speciesTier].push(id);
 
 			if (genNum >= 5) {
-				for (const meta of (isChampions ? ['4v4doublesuu'] : [
+				for (const meta of (isChampions ? ['4v4doublesuu', 'fasherdraftleagueseason3'] : isNDChampions ? ['fasherdraftleagueseason3'] : [
 					'1v1', '2v2doubles', 'lcuu', 'freeforall', 'ubersuu', 'almostanyability', 'balancedhackmons', 'godlygift', 'mixandmega', 'sharedpower', 'stabmons',
 					'12switch', '350cup', 'alphabetcup', 'badnboosted', 'battlefields', 'biomechmons', 'camomons', 'categoryswap', 'categoryswap',
 					'convergence', 'crossevolution', 'categoryswap', 'ferventimpersonation', 'foresighters', 'formemons', 'fortemons', 'franticfusions',
@@ -446,7 +446,11 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 					'aaa', 'bh', 'doubles', // natdex abbreviations
 					'tiershift', 'linked', 'pokebilitiesaaa',
 				])) {
-					const format = Dex.formats.get(`${gen}${isNatDex ? 'nationaldex' : isChampions ? 'champions' : ''}${meta}`);
+					const format = Dex.formats.get(
+						isNatDex ? `${gen}nationaldex${meta}` :
+						(isChampions || isNDChampions) ? `gen${genNum}champions${meta}` :
+						`${gen}${meta}`
+					);
 					if (!format.exists) continue;
 					const ruleTable = Dex.formats.getRuleTable(format);
 					let banned = ruleTable.isBannedSpecies(species);

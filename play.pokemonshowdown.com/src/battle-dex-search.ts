@@ -650,6 +650,8 @@ abstract class BattleTypedSearch<T extends SearchType> {
 	protected formatType: 'doubles' | 'bdsp' | 'bdspdoubles' | 'rs' | 'frlg' | 'bw1' | 'letsgo' | 'metronome' | 'natdex' |
 		'nfe' | 'ssdlc1' | 'ssdlc1doubles' | 'predlc' | 'predlcdoubles' | 'svdlc1' | 'svdlc1doubles' | 'stadium' | 'lc' |
 		'champions' | 'natdexchampions' | null = null;
+	/** Format id before it got collapsed to 'ag' for tier-range purposes; used to look up this exact format's own metagameBans. */
+	protected localMetagame: ID | null = null;
 	isDoubles = false;
 
 	/**
@@ -717,11 +719,22 @@ abstract class BattleTypedSearch<T extends SearchType> {
 			this.formatType = 'champions';
 			this.dex = Dex.mod('champions' as ID);
 			format = format.slice(9) as ID;
-			if (format.startsWith('natdex') || format.startsWith('nationaldex')) this.formatType = 'natdexchampions';
+			// Local leagues running NatDex-ruleset Champions formats under names
+			// that don't contain "natdex" (id prefix, so future seasons match too).
+			const localNatdexChampionsFormats = ['fasherdraftleague'];
+			if (
+				format.includes('natdex') || format.includes('nationaldex') ||
+				localNatdexChampionsFormats.some(prefix => format.startsWith(prefix))
+			) this.formatType = 'natdexchampions';
 			if (format.startsWith('natdex')) format = format.slice(6) as ID;
 			if (format.startsWith('nationaldex')) format = format.slice(11) as ID;
 			if (format.startsWith('vgc') || format.startsWith('bss')) format = 'ubers' as ID;
-			if (format.endsWith('draft')) format = 'ag' as ID;
+			if (
+				format.endsWith('draft') || localNatdexChampionsFormats.some(prefix => format.startsWith(prefix))
+			) {
+				if (localNatdexChampionsFormats.some(prefix => format.startsWith(prefix))) this.localMetagame = format;
+				format = 'ag' as ID;
+			}
 		}
 		if (format.startsWith('vgc')) {
 			this.formatType = 'doubles';
@@ -1271,6 +1284,12 @@ class BattlePokemonSearch extends BattleTypedSearch<'pokemon'> {
 						(id === 'AG' || id === 'rayquazamega') &&
 						'megarayquazaclause' in table.metagameBans[format]
 					) return false;
+					return true;
+				});
+			}
+			if (this.localMetagame && table.metagameBans?.[this.localMetagame]) {
+				tierSet = tierSet.filter(([type, id]) => {
+					if (id in table.metagameBans[this.localMetagame!]) return false;
 					return true;
 				});
 			}

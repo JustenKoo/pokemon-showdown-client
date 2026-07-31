@@ -119,11 +119,16 @@ export class TeamEditorState extends PSModel {
 			this.formeLegality = 'normal';
 		}
 
+		// Local leagues running Champions-mod formats at a non-default level
+		// (e.g. locked to level 100 via "!! Adjust Level"); id-matched so the
+		// disabled level field still shows the format's real default.
+		const localCustomLevelChampionsFormats = ['fasherdraftleague'];
 		this.defaultLevel = 100;
 		if (
-			formatid.includes('vgc') || formatid.includes('bss') || formatid.includes('ultrasinnohclassic') ||
+			(formatid.includes('vgc') || formatid.includes('bss') || formatid.includes('ultrasinnohclassic') ||
 			formatid.includes('battlespot') || formatid.includes('battlestadium') || formatid.includes('battlefestival') ||
-			formatid.includes('letsgo') || formatid.includes('champions')
+			formatid.includes('letsgo') || formatid.includes('champions')) &&
+			!localCustomLevelChampionsFormats.some(prefix => formatid.includes(prefix))
 		) {
 			this.defaultLevel = 50;
 		}
