@@ -2971,7 +2971,11 @@ export class BattleStatGuesser {
 			this.formatid.includes('metronomebattle') ||
 			this.formatid.endsWith('norestrictions')
 		);
-		this.useStatPoints = this.formatid.includes('champions');
+		// Local leagues running Champions mod with traditional EVs instead of
+		// its Stat Points system (see also battle-team-editor.tsx, team-validator.ts).
+		const localTraditionalEVChampionsFormats = ['fasherdraftleague'];
+		this.useStatPoints = this.formatid.includes('champions') &&
+			!localTraditionalEVChampionsFormats.some(prefix => this.formatid.includes(prefix));
 		this.supportsEVs = !this.formatid.includes('letsgo') && !this.useStatPoints;
 		this.supportsAVs = !this.supportsEVs && this.formatid.endsWith('norestrictions');
 	}
@@ -3586,7 +3590,9 @@ export function BattleStatOptimizer(set: Dex.PokemonSet, formatid: ID) {
 		((formatid.endsWith('hackmons') || formatid.endsWith('bh')) && dex.gen !== 6) ||
 		formatid.includes('metronomebattle') || formatid.endsWith('norestrictions')
 	);
-	const useStatPoints = formatid.includes('champions');
+	const localTraditionalEVChampionsFormats = ['fasherdraftleague'];
+	const useStatPoints = formatid.includes('champions') &&
+		!localTraditionalEVChampionsFormats.some(prefix => formatid.includes(prefix));
 	const supportsEVs = !formatid.includes('letsgo') && !useStatPoints;
 	if (!(useStatPoints || supportsEVs) || ignoreEVLimits) return null;
 
