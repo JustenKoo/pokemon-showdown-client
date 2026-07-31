@@ -160,19 +160,18 @@ export const PSBackground = new class extends PSStreamModel<string | null> {
 
 		// curid
 		if (!bgid || bgid === 'waterfall') {
-			if (location.host === 'smogtours.psim.us') {
-				bgid = 'shaymin';
-			} else {
-				const bgs = ['horizon', 'ocean', 'shaymin', 'charizards'];
-				bgid = bgs[Math.floor(Math.random() * bgs.length)];
-				// if someone clicked the random button, try to roll a different bg than before
-				if (bgid === this.curId) bgid = bgs[Math.floor(Math.random() * bgs.length)];
-			}
+			// Fasher Draft League server: default to our own background
+			// instead of a random official one.
+			bgid = 'fasherdraftleagueseason3';
 		}
 		this.curId = bgid;
 
 		if (!bgUrl) {
-			bgUrl = (bgid === 'solidblue' ? '#344b6c' : PSURL + 'fx/client-bg-' + bgid + '.jpg');
+			bgUrl = (
+				bgid === 'solidblue' ? '#344b6c' :
+				bgid === 'fasherdraftleagueseason3' ? 'fx/client-bg-fdl-s3.png' :
+				PSURL + 'fx/client-bg-' + bgid + '.jpg'
+			);
 		}
 
 		// April Fool's 2016 - Digimon theme
