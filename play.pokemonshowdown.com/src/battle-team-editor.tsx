@@ -72,6 +72,8 @@ export class TeamEditorState extends PSModel {
 	isChampions = false;
 	/** isChampions, but false for local leagues that opted out of Champions mod's Stat Points system for traditional EVs. */
 	usesStatPoints = false;
+	/** isChampions, but false for local leagues that re-enabled Terastallization (see Terastal Clause Mod). */
+	disablesTera = false;
 	formeLegality: 'normal' | 'hackmons' | 'custom' = 'normal';
 	abilityLegality: 'normal' | 'hackmons' = 'normal';
 	defaultLevel = 100;
@@ -110,6 +112,10 @@ export class TeamEditorState extends PSModel {
 		// its Stat Points system (see also battle-dex-search.ts, team-validator.ts).
 		const localTraditionalEVChampionsFormats = ['fasherdraftleague'];
 		this.usesStatPoints = this.isChampions && !localTraditionalEVChampionsFormats.some(prefix => formatid.includes(prefix));
+		// Local leagues running Champions mod with Terastallization re-enabled
+		// (see Terastal Clause Mod, added server-side to team-validator.ts/champions/scripts.ts).
+		const localTeraChampionsFormats = ['fasherdraftleague'];
+		this.disablesTera = this.isChampions && !localTeraChampionsFormats.some(prefix => formatid.includes(prefix));
 		if (formatid.includes('almostanyability') || formatid.includes('aaa')) {
 			this.abilityLegality = 'hackmons';
 		} else {
@@ -1825,7 +1831,7 @@ class TeamTextbox extends preact.Component<{
 			<span class="detailcell">
 				<label>Shiny</label>{set.shiny ? 'Yes' : '\u2014'}
 			</span>
-			{editor.gen === 9 && !editor.isChampions ? (
+			{editor.gen === 9 && !editor.disablesTera ? (
 				<span class="detailcell">
 					<label>Tera</label><PSIcon type={set.teraType || species.requiredTeraType || species.types[0]} />
 				</span>
@@ -3018,7 +3024,7 @@ class TeamEditorForm extends preact.Component<{
 										src={`${Dex.resourcePrefix}sprites/misc/shiny.png`} width={18} height={18} alt="Yes" style="margin-top: -2px"
 									/> : '\u2014'}
 								</span>}
-								{editor.gen === 9 && !editor.isChampions && <span class="detailcell">
+								{editor.gen === 9 && !editor.disablesTera && <span class="detailcell">
 									<label>Tera</label> {}
 									<PSIcon type={set.teraType || species.requiredTeraType || species.types[0]} new={!editor.narrow} tera />
 								</span>}
@@ -4051,7 +4057,7 @@ class DetailsForm extends preact.Component<{
 						))}
 					</select></label>
 				</p>}
-				{editor.gen === 9 && !editor.isChampions && <p>
+				{editor.gen === 9 && !editor.disablesTera && <p>
 					<label class="label" title="Tera Type">
 						Tera Type: {}
 						{species.requiredTeraType && editor.formeLegality === 'normal' ? (
