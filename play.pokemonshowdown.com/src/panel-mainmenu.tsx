@@ -1017,7 +1017,10 @@ export class TeamForm extends preact.Component<{
 		if (window.BattleFormats) {
 			this.format ||= this.props.defaultFormat || '';
 			if (!this.format) {
-				this.format = `gen${Dex.gen}randombattle`;
+				// Fasher Draft League server: default to our own format instead of
+				// Random Battle. Update this id each season.
+				const localDefaultFormat = 'gen9championsfasherdraftleagueseason3';
+				this.format = window.BattleFormats[localDefaultFormat] ? localDefaultFormat : `gen${Dex.gen}randombattle`;
 
 				const starredPrefs = PS.prefs.starredformats || {};
 				// .reverse() because the newest starred format should be the default one
