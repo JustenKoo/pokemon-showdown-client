@@ -87,6 +87,14 @@
 				} else {
 					alert('Unrecognised query string syntax: ' + location.search);
 				}
+			} else {
+				// Fasher Draft League: default to our local server when no
+				// ?~~host:port override is given, so the plain URL just works.
+				Config.defaultserver = {
+					id: 'localhost',
+					host: 'localhost',
+					port: 8000
+				};
 			}
 		})();
 	</script>
