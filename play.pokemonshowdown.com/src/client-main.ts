@@ -731,6 +731,18 @@ class PSUser extends PSStreamModel<PSLoginState | null> {
 		PSLoginServer.rawQuery(
 			'getassertion', { userid, challstr: this.challstr }
 		).then(res => {
+			// Fasher Draft League server: if the login server can't be reached at
+			// all (e.g. this client isn't hosted anywhere the login server allows
+			// CORS from), fall back to an unsigned guest login instead of just
+			// failing. This only actually works if the connected server has
+			// Config.noguestsecurity enabled - otherwise the server rejects the
+			// unsigned /trn the same way it always would.
+			if (!res) {
+				this.loggingIn = null;
+				PS.send(`/trn ${name},0,`);
+				this.update({ success: true });
+				return;
+			}
 			this.handleAssertion(name, res);
 			this.updateRegExp();
 		});
