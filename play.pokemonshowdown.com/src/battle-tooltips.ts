@@ -1624,6 +1624,13 @@ export class BattleTooltips {
 		let tier = this.battle.tier;
 		let gen = this.battle.gen;
 		let isCGT = tier.includes('Computer-Generated Teams');
+		// Local leagues running Champions mod with traditional EVs instead of
+		// its Stat Points system (see also battle-team-editor.tsx, team-validator.ts,
+		// and the BattleStatGuesser/BattleStatOptimizer classes further down this file).
+		const localTraditionalEVChampionsFormats = ['fasherdraftleague'];
+		const isLocalTraditionalEVChampions = localTraditionalEVChampionsFormats.some(
+			prefix => toID(tier).includes(prefix)
+		);
 
 		let minNatureMult = 0.9;
 		let maxNatureMult = 1.1;
@@ -1654,7 +1661,7 @@ export class BattleTooltips {
 			max = tr(tr(tr((2 * baseSpe + 31) * level / 100 + 5) * maxNatureMult) * tr((70 / 255 / 10 + 1) * 100) / 100);
 			if (tier.includes('No Restrictions')) max += 200;
 			else if (tier.includes('Random')) max += 20;
-		} else if (tier.includes('Champions')) {
+		} else if (tier.includes('Champions') && !isLocalTraditionalEVChampions) {
 			min = tr(minNatureMult * (baseSpe + 20));
 			ev0 = tr((2 * baseSpe + 31) * level / 100) + 5;
 			ev84 = tr((2 * baseSpe + 31 + 21) * level / 100) + 5;
