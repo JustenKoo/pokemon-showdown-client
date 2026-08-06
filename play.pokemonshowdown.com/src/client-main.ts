@@ -655,7 +655,11 @@ class PSTeams extends PSStreamModel<'team' | 'format'> {
  * User
  *********************************************************************/
 
-export type PSLoginState = { error?: string, success?: true, name?: string, needsPassword?: true, needsGoogle?: true };
+export type PSLoginState = {
+	error?: string, success?: true, name?: string, needsPassword?: true, needsGoogle?: true,
+	/** Fasher Draft League: this name is protected by our local /pwlogin system (server/fasher-accounts.ts), not a real Smogon account. */
+	needsLocalPassword?: true,
+};
 class PSUser extends PSStreamModel<PSLoginState | null> {
 	name = "";
 	group = '';
@@ -781,6 +785,18 @@ class PSUser extends PSStreamModel<PSLoginState | null> {
 				});
 			}
 		});
+	}
+	/**
+	 * Fasher Draft League: logs in via our local /pwlogin command
+	 * (server/chat-plugins/fasher-pwlogin.ts) instead of Smogon's real
+	 * login server - used for names protected by needsLocalPassword.
+	 */
+	pwLogin(name: string, password: string) {
+		this.loggingIn = name;
+		this.update(null);
+		PS.send(`/pwlogin ${name},${password}`);
+		this.loggingIn = null;
+		this.update({ success: true });
 	}
 	updateLogin(update: PSLoginState) {
 		this.update(update);
@@ -2367,11 +2383,16 @@ export const PS = new class extends PSModel {
 				this.update();
 				continue;
 			} case 'nametaken': {
-				// Fasher Draft League: surface the server's actual reason (e.g.
-				// "This name is password-protected. Log in with: /pwlogin ...")
-				// instead of a generic message that hides it.
+				// Fasher Draft League: our local /pwlogin system (server/
+				// fasher-accounts.ts) sends a recognizable message prefix
+				// for both "needs a password" and "wrong password" so the
+				// client can show the password field instead of just
+				// leaving the user stuck with no way to enter one.
+				const reason = args[2] || `Someone is already using the name ${args[1]}.`;
+				const needsLocalPassword = reason.startsWith('This name is password-protected.') ||
+					reason.startsWith('Incorrect password for ');
 				PS.join('login' as RoomID, {
-					args: { error: args[2] || `Someone is already using the name ${args[1]}.` },
+					args: needsLocalPassword ? { error: reason, needsLocalPassword: true } : { error: reason },
 				});
 				break;
 			} case 'chat': case 'c': {

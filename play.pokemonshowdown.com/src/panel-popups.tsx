@@ -899,7 +899,10 @@ class LoginPanel extends PSRoomPanel {
 	handleSubmit = (ev: Event) => {
 		ev.preventDefault();
 		const passwordBox = this.base!.querySelector<HTMLInputElement>('input[name=password]');
-		if (passwordBox) {
+		const loginState = this.props.room.args as PSLoginState;
+		if (passwordBox && loginState?.needsLocalPassword) {
+			PS.user.pwLogin(this.getUsername(), passwordBox.value);
+		} else if (passwordBox) {
 			PS.user.changeNameWithPassword(this.getUsername(), passwordBox.value);
 		} else {
 			PS.user.changeName(this.getUsername());
@@ -942,8 +945,10 @@ class LoginPanel extends PSRoomPanel {
 				{PS.user.named && !loginState && <p>
 					<small>(Others will be able to see your name change. To change name privately, use "Log out")</small>
 				</p>}
-				{loginState?.needsPassword && <p>
-					<i class="fa fa-level-up fa-rotate-90" aria-hidden></i> <strong>if you registered this name:</strong>
+				{(loginState?.needsPassword || loginState?.needsLocalPassword) && <p>
+					<i class="fa fa-level-up fa-rotate-90" aria-hidden></i> <strong>
+						{loginState?.needsLocalPassword ? "this name is password-protected:" : "if you registered this name:"}
+					</strong>
 					<label class="label">
 						Password: {}
 						<input
@@ -963,7 +968,7 @@ class LoginPanel extends PSRoomPanel {
 				<p class="buttonbar">
 					{PS.user.loggingIn ? (
 						<button disabled class="cur">Logging in...</button>
-					) : loginState?.needsPassword ? (
+					) : (loginState?.needsPassword || loginState?.needsLocalPassword) ? (
 						<>
 							<button type="submit" class="button"><strong>Log in</strong></button> {}
 							<button type="button" onClick={this.reset} class="button">Cancel</button>
@@ -1182,32 +1187,20 @@ class RegisterPanel extends PSRoomPanel {
 
 	handleRegisterUser = (ev: Event) => {
 		ev.preventDefault();
-		let captcha = this.base?.querySelector<HTMLInputElement>('input[name=captcha]')?.value;
-		let password = this.base?.querySelector<HTMLInputElement>('input[name=password]')?.value;
-		let cpassword = this.base?.querySelector<HTMLInputElement>('input[name=cpassword]')?.value;
-		if (!captcha?.length ||
-			!password?.length ||
-			!cpassword?.length) return this.setState({ errorMsg: "All fields are required" });
+		const password = this.base?.querySelector<HTMLInputElement>('input[name=password]')?.value;
+		const cpassword = this.base?.querySelector<HTMLInputElement>('input[name=cpassword]')?.value;
+		if (!password?.length || !cpassword?.length) return this.setState({ errorMsg: "All fields are required" });
 		if (password !== cpassword) return this.setState({ errorMsg: 'Passwords do not match' });
-		PSLoginServer.query("register", {
-			captcha,
-			password,
-			cpassword,
-			username: PS.user.name,
-			challstr: PS.user.challstr,
-		}).then(data => {
-			if (data?.actionerror) this.setState({ errorMsg: data?.actionerror });
-			if (data?.curuser?.loggedin) {
-				let name = data.curuser.username;
-				PS.user.registered = { name, userid: toID(name) };
-				if (data?.assertion) PS.user.handleAssertion(name, data?.assertion);
-				this.close();
-				PS.alert("You have been successfully registered.");
-			}
-		}).catch(err => {
-			console.error(err);
-			this.setState({ errorMsg: err.message });
-		});
+
+		// Fasher Draft League: this protects the current name via our own
+		// local /pwlogin system (server/chat-plugins/fasher-pwlogin.ts)
+		// instead of real Smogon registration, which this self-hosted
+		// client has no way to reach (see server/fasher-accounts.ts for
+		// why - noguestsecurity lets anyone claim any unprotected name,
+		// so this exists to let league members lock theirs down).
+		PS.send(`/pwlogin ${PS.user.name},${password}`);
+		this.close();
+		PS.alert("This name is now password-protected on this server. Remember the password - you'll need it to log back in as this name.");
 
 		this.setState({ errorMsg: '' });
 	};
@@ -1220,7 +1213,7 @@ class RegisterPanel extends PSRoomPanel {
 				{ !!this.state.errorMsg?.length && <p>
 					<b class="message-error"> {this.state.errorMsg}</b>
 				</p> }
-				<p>Register your account:</p>
+				<p>Protect this name with a password:</p>
 				<p>
 					<label class="label">
 						Username: {}
@@ -1237,18 +1230,6 @@ class RegisterPanel extends PSRoomPanel {
 					<label class="label">
 						Password (confirm): {}
 						<input name="cpassword" type="password" autocomplete="new-password" class="textbox" />
-					</label>
-				</p>
-				<p>
-					<label class="label"><img
-						src="https://play.pokemonshowdown.com/sprites/gen5ani/pikachu.gif"
-						alt="An Electric-type mouse that is the mascot of the Pok&eacute;mon franchise."
-					/></label>
-				</p>
-				<p>
-					<label class="label">
-						What is this pokemon? {}
-						<input name="captcha" class="textbox" />
 					</label>
 				</p>
 				<p class="buttonbar">
