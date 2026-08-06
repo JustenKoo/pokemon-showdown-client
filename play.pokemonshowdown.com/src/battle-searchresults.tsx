@@ -31,6 +31,8 @@ export class PSSearchResults extends preact.Component<{
 	search: DexSearch, class?: string, style?: string | null,
 	prepend?: preact.ComponentChildren, children?: preact.ComponentChildren,
 	hideFilters?: boolean,
+	/** Fasher Draft League: shows a draft point cost column next to BST. */
+	draftPoints?: boolean,
 	/** type = '' means a filter was selected,
 	  * null means a sort was selected (clear not needed) */
 	onSelect?: (type: SearchType | '' | null, name: string, moveSlot?: string) => void,
@@ -62,6 +64,8 @@ export class PSSearchResults extends preact.Component<{
 			`<button class="sortcol statsortcol${sortCol === 'spd' ? ' cur' : ''}" data-sort="spd">SpD</button>`,
 			`<button class="sortcol statsortcol${sortCol === 'spe' ? ' cur' : ''}" data-sort="spe">Spe</button>`,
 			`<button class="sortcol statsortcol${sortCol === 'bst' ? ' cur' : ''}" data-sort="bst">BST</button>`,
+			this.props.draftPoints ?
+				`<button class="sortcol statsortcol${sortCol === 'points' ? ' cur' : ''}" data-sort="points">Pts</button>` : '',
 			`</div></li>`,
 		].join('');
 	}
@@ -126,7 +130,13 @@ export class PSSearchResults extends preact.Component<{
 				`<span class="col statcol"><em>SpD</em><br />${stats.spd}</span>` :
 				`<span class="col statcol"><em>Spc</em><br />${stats.spa}</span>`) +
 				`<span class="col statcol"><em>Spe</em><br />${stats.spe}</span>` +
-				`<span class="col bstcol"><em>BST<br />${bst}</em></span></a></li>`;
+				`<span class="col bstcol"><em>BST<br />${bst}</em></span>`;
+
+		if (this.props.draftPoints) {
+			const points = Dex.getDraftPoints(pokemon);
+			buf += `<span class="col bstcol"><em>Pts<br />${points === null ? '—' : points}</em></span>`;
+		}
+		buf += `</a></li>`;
 		return buf;
 	}
 

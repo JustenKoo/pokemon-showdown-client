@@ -571,6 +571,12 @@ export const Dex = new class implements ModdedDex {
 		return false;
 	}
 
+	/** Fasher Draft League: draft point cost for a species, or null if unpriced. */
+	getDraftPoints(species: Species): number | null {
+		const cost = FasherDraftPoints[species.name];
+		return cost === undefined ? null : cost;
+	}
+
 	loadSpriteData(gen: 'xy' | 'bw') {
 		if (this.loadedSpriteData[gen]) return;
 		this.loadedSpriteData[gen] = 1;

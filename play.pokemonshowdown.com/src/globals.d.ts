@@ -15,6 +15,10 @@ declare const BattleStatuses: { [id: string]: AnyObject };
 declare const BattlePokemonSprites: { [id: string]: AnyObject };
 declare const BattlePokemonSpritesBW: { [id: string]: AnyObject };
 declare const NonBattleGames: { [id: string]: string };
+/** Fasher Draft League: species name -> point cost, generated from config/fasher-draft-points.ts (server repo). */
+declare const FasherDraftPoints: { [species: string]: number };
+/** Fasher Draft League: total points a player has to spend drafting a team. */
+declare const FasherDraftBudget: number;
 
 // Window
 /////////

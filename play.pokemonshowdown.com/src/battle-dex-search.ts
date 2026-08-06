@@ -1351,6 +1351,17 @@ class BattlePokemonSearch extends BattleTypedSearch<'pokemon'> {
 				break;
 			case 'move':
 				if (!this.canLearn(species.id, value as ID)) return false;
+				break;
+			case 'pointsmin': {
+				const points = Dex.getDraftPoints(species);
+				if (points === null || points < Number(value)) return false;
+				break;
+			}
+			case 'pointsmax': {
+				const points = Dex.getDraftPoints(species);
+				if (points === null || points > Number(value)) return false;
+				break;
+			}
 			}
 		}
 		return true;
@@ -1380,6 +1391,17 @@ class BattlePokemonSearch extends BattleTypedSearch<'pokemon'> {
 				const name1 = id1;
 				const name2 = id2;
 				return (name1 < name2 ? -1 : name1 > name2 ? 1 : 0) * sortOrder;
+			});
+		} else if (sortCol === 'points') {
+			// Fasher Draft League: unpriced species sort to the bottom
+			// regardless of direction - they're not part of the draft pool.
+			return results.sort(([rowType1, id1], [rowType2, id2]) => {
+				const points1 = Dex.getDraftPoints(this.dex.species.get(id1));
+				const points2 = Dex.getDraftPoints(this.dex.species.get(id2));
+				if (points1 === null && points2 === null) return 0;
+				if (points1 === null) return 1;
+				if (points2 === null) return -1;
+				return (points2 - points1) * sortOrder;
 			});
 		}
 		throw new Error("invalid sortcol");

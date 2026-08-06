@@ -74,6 +74,43 @@ export class TeamEditorState extends PSModel {
 	usesStatPoints = false;
 	/** isChampions, but false for local leagues that re-enabled Terastallization (see Terastal Clause Mod). */
 	disablesTera = false;
+	/** Fasher Draft League: shows draft point costs/budget in the teambuilder. Only ever toggled on for box teams (team.isBox). */
+	draftPlanMode = false;
+	draftPointsFilterMode: 'max-min' | 'min-max' | 'range' | 'specific' = 'max-min';
+	draftPointsMin = 0;
+	draftPointsMax = 20;
+	/** Fasher Draft League: applies draftPointsFilterMode/Min/Max to the search's sort/filters. */
+	applyDraftPointsFilter() {
+		if (this.search.filters) {
+			this.search.filters = this.search.filters.filter(([type]) => type !== 'pointsmin' && type !== 'pointsmax');
+			if (!this.search.filters.length) this.search.filters = null;
+		}
+		switch (this.draftPointsFilterMode) {
+		case 'max-min':
+			this.search.sortCol = 'points';
+			this.search.reverseSort = false;
+			break;
+		case 'min-max':
+			this.search.sortCol = 'points';
+			this.search.reverseSort = true;
+			break;
+		case 'range':
+			this.search.sortCol = 'points';
+			this.search.reverseSort = false;
+			(this.search.filters ??= []).push(['pointsmin', String(this.draftPointsMin)]);
+			(this.search.filters ??= []).push(['pointsmax', String(this.draftPointsMax)]);
+			break;
+		case 'specific':
+			this.search.sortCol = 'points';
+			this.search.reverseSort = false;
+			(this.search.filters ??= []).push(['pointsmin', String(this.draftPointsMin)]);
+			(this.search.filters ??= []).push(['pointsmax', String(this.draftPointsMin)]);
+			break;
+		}
+		this.search.results = null;
+		this.search.find(this.search.query);
+		this.update();
+	}
 	formeLegality: 'normal' | 'hackmons' | 'custom' = 'normal';
 	abilityLegality: 'normal' | 'hackmons' = 'normal';
 	defaultLevel = 100;
@@ -94,6 +131,16 @@ export class TeamEditorState extends PSModel {
 			this.lastPackedTeam = this.team.packedTeam;
 		}
 		this.readonly = readonly;
+	}
+	/** Fasher Draft League: budget points remaining after the currently-drafted Pokemon. */
+	remainingDraftPoints() {
+		let spent = 0;
+		for (const set of this.sets) {
+			if (!set.species) continue;
+			const species = this.dex.species.get(set.species);
+			spent += Dex.getDraftPoints(species) || 0;
+		}
+		return FasherDraftBudget - spent;
 	}
 	setFormat(format: string) {
 		const team = this.team;
@@ -975,6 +1022,43 @@ export class TeamEditorState extends PSModel {
 	}
 }
 
+/** Fasher Draft League: points filter/sort control shown above the Pokemon search when Draft Plan Mode is on. */
+function renderDraftPointsFilterControl(editor: TeamEditorState) {
+	const setMode = (ev: Event) => {
+		editor.draftPointsFilterMode = (ev.currentTarget as HTMLSelectElement).value as typeof editor.draftPointsFilterMode;
+		editor.applyDraftPointsFilter();
+	};
+	const setMin = (ev: Event) => {
+		editor.draftPointsMin = Number((ev.currentTarget as HTMLInputElement).value) || 0;
+		editor.applyDraftPointsFilter();
+	};
+	const setMax = (ev: Event) => {
+		editor.draftPointsMax = Number((ev.currentTarget as HTMLInputElement).value) || 0;
+		editor.applyDraftPointsFilter();
+	};
+	const mode = editor.draftPointsFilterMode;
+	return <div class="draft-points-filter" style="padding:4px 3px">
+		<label>Points: <select class="select" value={mode} onChange={setMode}>
+			<option value="max-min">Max to Min</option>
+			<option value="min-max">Min to Max</option>
+			<option value="range">Range</option>
+			<option value="specific">Specific Value</option>
+		</select></label>
+		{mode === 'range' && <span>
+			{} <input
+				type="number" class="textbox" style="width:50px" value={editor.draftPointsMin} onInput={setMin}
+			/> to <input
+				type="number" class="textbox" style="width:50px" value={editor.draftPointsMax} onInput={setMax}
+			/>
+		</span>}
+		{mode === 'specific' && <span>
+			{} <input
+				type="number" class="textbox" style="width:50px" value={editor.draftPointsMin} onInput={setMin}
+			/>
+		</span>}
+	</div>;
+}
+
 export class TeamEditor extends preact.Component<{
 	team: Team, narrow?: boolean, onChange?: () => void, readOnly?: boolean,
 	children?: preact.ComponentChildren, resources?: preact.ComponentChildren,
@@ -1024,6 +1108,10 @@ export class TeamEditor extends preact.Component<{
 			window.PS.prefs.set('teameditorzoomoutsearch', checked ? true : null);
 		}
 		this.zoomOutSearch = checked;
+		this.forceUpdate();
+	};
+	toggleDraftPlanMode = () => {
+		this.editor.draftPlanMode = !this.editor.draftPlanMode;
 		this.forceUpdate();
 	};
 	updateMobileScale = () => {
@@ -1149,6 +1237,11 @@ export class TeamEditor extends preact.Component<{
 				<li><button onClick={this.setTab} value="import" class={`button button-last${this.mode === 'import' ? ' cur' : ''}`}>
 					Import/Export
 				</button></li>
+				{editor.team.isBox && editor.draftPlanMode && <li style="margin-top: 1px; margin-left: 8px;">
+					<span class="button disabled" style="cursor:default">
+						Remaining Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget}
+					</span>
+				</li>}
 				<li class="teameditor-options" style="float: right; margin-top: 1px; margin-right: 8px;">
 					<details ref={el => { this.optionsMenu = el; }}>
 						<summary class="button button-first">Options</summary>
@@ -1171,7 +1264,14 @@ export class TeamEditor extends preact.Component<{
 						</div>
 					</details>
 				</li>
-			</ul>
+					{editor.team.isBox && <li style="float: right; margin-top: 1px; margin-right: 8px;">
+						<button
+							class={`button${editor.draftPlanMode ? ' cur' : ''}`} onClick={this.toggleDraftPlanMode}
+						>
+							Draft Plan Mode
+						</button>
+					</li>}
+				</ul>
 			{TeamEditorState.renderClipboard(this.cancelClipboard)}
 			{this.mode === 'form' ? (
 				<TeamEditorForm editor={editor} onChange={this.props.onChange} onUpdate={this.update} />
@@ -1968,10 +2068,14 @@ class TeamTextbox extends preact.Component<{
 					) : (
 						<PSSearchResults
 							class="searchresults" style={resultsCSS}
-							prepend={<button class="button closesearch" onClick={this.closeMenu}>
-								{!editor.narrow && <kbd>Esc</kbd>} <i class="fa fa-times" aria-hidden></i> Close
-							</button>}
+							prepend={<>
+								<button class="button closesearch" onClick={this.closeMenu}>
+									{!editor.narrow && <kbd>Esc</kbd>} <i class="fa fa-times" aria-hidden></i> Close
+								</button>
+								{editor.team.isBox && editor.draftPlanMode && renderDraftPointsFilterControl(editor)}
+							</>}
 							search={editor.search}
+							draftPoints={editor.team.isBox && editor.draftPlanMode}
 							onSelect={this.selectResult}
 						/>
 					)
@@ -2276,6 +2380,9 @@ class TeamEditorForm extends preact.Component<{
 				<PSSearchResults
 					class="set-searchresults"
 					search={editor.search} hideFilters
+					prepend={type === 'pokemon' && editor.team.isBox && editor.draftPlanMode ?
+						renderDraftPointsFilterControl(editor) : undefined}
+					draftPoints={type === 'pokemon' && editor.team.isBox && editor.draftPlanMode}
 					onSelect={this.selectResult}
 				>
 					{type === 'ability' && <SetSourceButtons
