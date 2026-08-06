@@ -2367,7 +2367,12 @@ export const PS = new class extends PSModel {
 				this.update();
 				continue;
 			} case 'nametaken': {
-				PS.join('login' as RoomID, { args: { error: `Someone is already using the name ${args[1]}.` } });
+				// Fasher Draft League: surface the server's actual reason (e.g.
+				// "This name is password-protected. Log in with: /pwlogin ...")
+				// instead of a generic message that hides it.
+				PS.join('login' as RoomID, {
+					args: { error: args[2] || `Someone is already using the name ${args[1]}.` },
+				});
 				break;
 			} case 'chat': case 'c': {
 				if (args[1] === '~' && (args[2] + ' ').startsWith('/warn ')) {
