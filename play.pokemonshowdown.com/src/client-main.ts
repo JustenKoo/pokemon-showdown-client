@@ -2392,7 +2392,14 @@ export const PS = new class extends PSModel {
 				const needsLocalPassword = reason.startsWith('This name is password-protected.') ||
 					reason.startsWith('Incorrect password for ');
 				PS.join('login' as RoomID, {
-					args: needsLocalPassword ? { error: reason, needsLocalPassword: true } : { error: reason },
+					// name is included so the reopened dialog (a fresh
+					// component instance, since popups always get
+					// recreated) knows which username it's for and can
+					// pre-fill/lock the field - without it, getUsername()
+					// falls back to an empty string since the user isn't
+					// logged in yet to read PS.user.name.
+					args: needsLocalPassword ?
+						{ error: reason, name: args[1], needsLocalPassword: true } : { error: reason },
 				});
 				break;
 			} case 'chat': case 'c': {
