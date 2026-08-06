@@ -1484,6 +1484,26 @@ process.stdout.write("Building `data/moves,items,abilities,typechart,learnsets.j
 }
 
 /*********************************************************
+ * Build fasher-draft-points.js
+ *
+ * Fasher Draft League: generated from the server repo's
+ * config/fasher-draft-points.ts (via caches/pokemon-showdown), so this
+ * only needs to be manually copied once via this build step instead of
+ * with an ad-hoc one-off script.
+ *********************************************************/
+
+{
+	const pointsModule = requireNoCache('../caches/pokemon-showdown/dist/config/fasher-draft-points.js');
+	const points = {};
+	for (const species in pointsModule.FasherDraftPointValues) {
+		points[species] = pointsModule.FasherDraftPointValues[species].cost;
+	}
+	const buf = 'exports.FasherDraftPoints = ' + es3stringify(points) + ';\n' +
+		'exports.FasherDraftBudget = ' + pointsModule.FASHER_DRAFT_BUDGET + ';\n';
+	fs.writeFileSync('play.pokemonshowdown.com/data/fasher-draft-points.js', buf);
+}
+
+/*********************************************************
  * Build learnsets.js
  *********************************************************/
 
