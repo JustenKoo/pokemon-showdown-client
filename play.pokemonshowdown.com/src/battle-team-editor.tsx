@@ -1166,7 +1166,6 @@ export class TeamEditor extends preact.Component<{
 	}
 	renderDefensiveCoverage() {
 		const { editor } = this;
-		if (editor.team.isBox) return null;
 		if (!editor.sets.length) return null;
 
 		const counters = Object.values(editor.teamDefensiveCoverage());
