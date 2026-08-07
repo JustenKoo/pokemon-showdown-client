@@ -3135,6 +3135,10 @@ class TeamEditorForm extends preact.Component<{
 									<label>Tera</label> {}
 									<PSIcon type={set.teraType || species.requiredTeraType || species.types[0]} new={!editor.narrow} tera />
 								</span>}
+								{editor.team.isBox && editor.draftPlanMode && <span class="detailcell">
+									<label>Pts</label> {}
+									{Dex.getDraftPoints(species) ?? '—'}
+								</span>}
 								{editor.hpTypeMatters(set) && <span class="detailcell">
 									<label>H.P.</label> {}
 									<PSIcon type={editor.getHPType(set)} new={!editor.narrow} />
