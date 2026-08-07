@@ -1900,8 +1900,15 @@ if (window.Net) {
 		Object.assign(Config.customcolors, data);
 	}).catch(() => {});
 	// Fasher Draft League: direct hex color overrides, set via /customcolor.
+	// This fetch is async, so by the time it resolves, usernameColor() may
+	// have already been called (and cached a stale hash-based color) for
+	// anyone in `data` - e.g. the topbar renders your own name on page load,
+	// well before this has a chance to complete. Evict those cache entries
+	// and force a re-render so the direct color actually takes effect.
 	Net(`/config/directcolors.json?${Math.random()}`).get().then(response => {
 		const data = JSON.parse(response);
 		Config.directcolors = { ...Config.directcolors, ...data };
+		for (const name in data) delete BattleLog.colorCache[name];
+		window.PS?.update();
 	}).catch(() => {});
 }
