@@ -40,6 +40,8 @@ export declare namespace Teams {
 		gigantamax?: boolean;
 		/** Defaults to the primary type */
 		teraType?: string;
+		/** Fasher Draft League: marks this set as the team's Tera Captain (1.5x draft point cost). Not persisted through pack/unpack. */
+		teraCaptain?: boolean;
 	}
 	export interface PokemonSet extends Partial<FullPokemonSet> {
 		/** Defaults to species name (not including forme), like in games */

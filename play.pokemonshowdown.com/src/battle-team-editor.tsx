@@ -132,13 +132,19 @@ export class TeamEditorState extends PSModel {
 		}
 		this.readonly = readonly;
 	}
+	/** Fasher Draft League: draft point cost of a set, including the Tera Captain multiplier. */
+	draftPointsForSet(set: Dex.PokemonSet) {
+		const species = this.dex.species.get(set.species);
+		const cost = Dex.getDraftPoints(species);
+		if (cost === null) return null;
+		return set.teraCaptain ? Math.floor(cost * 1.5) : cost;
+	}
 	/** Fasher Draft League: budget points remaining after the currently-drafted Pokemon. */
 	remainingDraftPoints() {
 		let spent = 0;
 		for (const set of this.sets) {
 			if (!set.species) continue;
-			const species = this.dex.species.get(set.species);
-			spent += Dex.getDraftPoints(species) || 0;
+			spent += this.draftPointsForSet(set) || 0;
 		}
 		return FasherDraftBudget - spent;
 	}
@@ -3137,7 +3143,7 @@ class TeamEditorForm extends preact.Component<{
 								</span>}
 								{editor.team.isBox && editor.draftPlanMode && <span class="detailcell">
 									<label>Pts</label> {}
-									{Dex.getDraftPoints(species) ?? '—'}
+									{editor.draftPointsForSet(set) ?? '—'}
 								</span>}
 								{editor.hpTypeMatters(set) && <span class="detailcell">
 									<label>H.P.</label> {}
@@ -3998,6 +4004,16 @@ class DetailsForm extends preact.Component<{
 		}
 		this.props.onChange();
 	};
+	changeTeraCaptain = (ev: Event) => {
+		const target = ev.currentTarget as HTMLInputElement;
+		const { set } = this.props;
+		if (target.checked) {
+			set.teraCaptain = true;
+		} else {
+			delete set.teraCaptain;
+		}
+		this.props.onChange();
+	};
 	changeLevel = (ev: Event) => {
 		const target = ev.currentTarget as HTMLInputElement;
 		const { set } = this.props;
@@ -4184,7 +4200,13 @@ class DetailsForm extends preact.Component<{
 								))}
 							</select>
 						)}
-					</label>
+					</label> {}
+					{editor.team.isBox && editor.draftPlanMode && <label class="checkbox inline">
+						<input
+							type="checkbox" name="teracaptain" checked={!!set.teraCaptain}
+							onInput={this.changeTeraCaptain} onChange={this.changeTeraCaptain}
+						/> Tera Captain
+					</label>}
 				</p>}
 				{species.cosmeticFormes && <div>
 					<p><strong>Form:</strong></p>
