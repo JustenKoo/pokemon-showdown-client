@@ -749,6 +749,7 @@ class MainMenuPanel extends PSRoomPanel<MainMenuRoom> {
 						<p><a class="mainmenu2 mainmenu button" href="teambuilder">Teambuilder</a></p>
 						<p><a class={"mainmenu3 mainmenu" + onlineButton} href="ladder">Ladder</a></p>
 						<p><a class={"mainmenu6 mainmenu" + onlineButton} href="view-friends-all">Friends</a></p>
+						<p><a class={"mainmenu5 mainmenu" + onlineButton} href="fasherleague">Fasher Draft League</a></p>
 						<p><a class={"mainmenu7 mainmenu" + onlineButton} href="resources">Info & Resources</a></p>
 					</div>
 				</div>
