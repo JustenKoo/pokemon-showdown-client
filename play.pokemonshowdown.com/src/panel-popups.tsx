@@ -146,6 +146,48 @@ export class StatusEditor extends preact.Component {
 	}
 }
 
+/** Fasher Draft League: lets a user pick their own name color directly, instead of a hash-derived one. */
+export class ColorPicker extends preact.Component {
+	declare state: { picking?: boolean };
+	togglePicker = (ev: Event) => {
+		ev.preventDefault();
+		ev.stopImmediatePropagation();
+		this.setState({ picking: !this.state.picking });
+	};
+	pickColor = (ev: Event, color: string) => {
+		ev.preventDefault();
+		ev.stopImmediatePropagation();
+		PS.send(`/customcolor ${color}`);
+		this.setState({ picking: false });
+	};
+	resetColor = (ev: Event) => {
+		ev.preventDefault();
+		ev.stopImmediatePropagation();
+		PS.send(`/customcolor reset`);
+		this.setState({ picking: false });
+	};
+	override render() {
+		if (!this.state.picking) {
+			return <button class="button small" type="button" onClick={this.togglePicker}>Custom Color</button>;
+		}
+		const palette = BattleLog.usernameColorPalette();
+		return <div class="colorpicker">
+			<div style="display:flex;flex-wrap:wrap;gap:4px;max-width:220px;margin:4px 0">
+				{palette.map(color => (
+					<button
+						type="button" onClick={ev => this.pickColor(ev, color)}
+						style={`width:22px;height:22px;border-radius:3px;border:1px solid rgba(0,0,0,0.3);` +
+							`background:${color};padding:0;cursor:pointer`}
+						aria-label={color} title={color}
+					></button>
+				))}
+			</div>
+			<button class="button small" type="button" onClick={this.resetColor}>Reset to default</button> {}
+			<button class="button small" type="button" onClick={this.togglePicker}>Cancel</button>
+		</div>;
+	}
+}
+
 class UserPanel extends PSRoomPanel<UserRoom> {
 	static readonly id = 'user';
 	static readonly routes = ['user-*', 'viewuser-*', 'users'];
@@ -685,6 +727,7 @@ class OptionsPanel extends PSRoomPanel {
 				/> {}
 				<strong>{PS.user.name}</strong>
 				<StatusEditor />
+				<ColorPicker />
 			</p>
 
 			<p style="clear:both">

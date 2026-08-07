@@ -58,6 +58,8 @@ export interface PSConfig {
 		teams: string,
 	};
 	customcolors: Record<string, string>;
+	/** Fasher Draft League: direct hex color overrides, set via /customcolor. Populated async, so treat as possibly absent. */
+	directcolors?: Record<string, string>;
 	whitelist?: string[];
 	testclient?: boolean;
 }

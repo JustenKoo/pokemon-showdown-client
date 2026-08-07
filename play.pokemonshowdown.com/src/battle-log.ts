@@ -1200,6 +1200,13 @@ export class BattleLog {
 
 	static usernameColor(name: ID) {
 		if (this.colorCache[name]) return this.colorCache[name];
+		// Fasher Draft League: a directly-picked color (see /customcolor) bypasses
+		// hashing entirely - what you picked is exactly what gets shown.
+		const direct = Config.directcolors?.[name];
+		if (direct) {
+			this.colorCache[name] = direct;
+			return direct;
+		}
 		let hash;
 		if (Config.customcolors[name]) {
 			hash = MD5(Config.customcolors[name]);
@@ -1210,6 +1217,17 @@ export class BattleLog {
 		let S = parseInt(hash.substr(0, 4), 16) % 50 + 40; // 40 to 89
 		let L = Math.floor(parseInt(hash.substr(8, 4), 16) % 20 + 30); // 30 to 49
 
+		const color = this.hslColorToHex(H, S, L);
+		this.colorCache[name] = color;
+		return color;
+	}
+
+	/**
+	 * Fasher Draft League: shared by usernameColor (hash-derived H/S/L) and
+	 * usernameColorPalette (picker-chosen H, at representative S/L) so both
+	 * produce colors from the same luminance-corrected "Showdown palette".
+	 */
+	static hslColorToHex(H: number, S: number, L: number) {
 		let { R, G, B } = this.HSLToRGB(H, S, L);
 		let lum = R * R * R * 0.2126 + G * G * G * 0.7152 + B * B * B * 0.0722; // 0.013 (dark blue) to 0.737 (yellow)
 
@@ -1217,7 +1235,6 @@ export class BattleLog {
 		if (HLmod > 18) HLmod = (HLmod - 18) * 2.5;
 		else if (HLmod < 0) HLmod /= 3;
 		else HLmod = 0;
-		// let mod = ';border-right: ' + Math.abs(HLmod) + 'px solid ' + (HLmod > 0 ? 'red' : '#0088FF');
 		let Hdist = Math.min(Math.abs(180 - H), Math.abs(240 - H));
 		if (Hdist < 15) {
 			HLmod += (15 - Hdist) / 3;
@@ -1230,8 +1247,18 @@ export class BattleLog {
 			const hex = Math.round(x * 255).toString(16);
 			return hex.length === 1 ? '0' + hex : hex;
 		};
-		this.colorCache[name] = `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-		return this.colorCache[name];
+		return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+	}
+
+	/** Fasher Draft League: a representative palette of every hue in Showdown's username-color space, for a picker UI. */
+	static usernameColorPalette(count = 24) {
+		const S = 65; // midpoint of the 40-89 range usernameColor uses
+		const L = 40; // midpoint of the 30-49 range usernameColor uses
+		const swatches: string[] = [];
+		for (let i = 0; i < count; i++) {
+			swatches.push(this.hslColorToHex(Math.round(i * 360 / count), S, L));
+		}
+		return swatches;
 	}
 
 	static HSLToRGB(H: number, S: number, L: number) {
@@ -1871,5 +1898,10 @@ if (window.Net) {
 	Net(`/config/colors.json?${Math.random()}`).get().then(response => {
 		const data = JSON.parse(response);
 		Object.assign(Config.customcolors, data);
+	}).catch(() => {});
+	// Fasher Draft League: direct hex color overrides, set via /customcolor.
+	Net(`/config/directcolors.json?${Math.random()}`).get().then(response => {
+		const data = JSON.parse(response);
+		Config.directcolors = { ...Config.directcolors, ...data };
 	}).catch(() => {});
 }
