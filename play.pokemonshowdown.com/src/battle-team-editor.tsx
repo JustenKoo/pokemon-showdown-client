@@ -3049,18 +3049,25 @@ class TeamEditorForm extends preact.Component<{
 		const spriteClass = set && Dex.getTeambuilderSpriteData(set, editor.dex).pixelated ? ' pixelated' : '';
 		if (!set) {
 			return <div class="set-form" data-set-index={i}>
-				<div style="text-align:right">
-					{editor.deletedSet ? (
-						<button onClick={this.undeleteSet} class="option"><i class="fa fa-undo" aria-hidden></i> Undo delete</button>
-					) : (
-						<button class="option" style="visibility:hidden"><i class="fa fa-trash" aria-hidden></i> Delete</button>
-					)} {}
-					<button
-						class="option" name="import" onClick={this.clickPanelButton}
-						value={`set-${i}-import`}
-					>
-						<i class="fa fa-upload" aria-hidden></i> Import
-					</button>
+				<div style="display:flex;justify-content:space-between;align-items:center">
+					<span>
+						{editor.team.isBox && editor.draftPlanMode && <>
+							Remaining Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget}
+						</>}
+					</span>
+					<span>
+						{editor.deletedSet ? (
+							<button onClick={this.undeleteSet} class="option"><i class="fa fa-undo" aria-hidden></i> Undo delete</button>
+						) : (
+							<button class="option" style="visibility:hidden"><i class="fa fa-trash" aria-hidden></i> Delete</button>
+						)} {}
+						<button
+							class="option" name="import" onClick={this.clickPanelButton}
+							value={`set-${i}-import`}
+						>
+							<i class="fa fa-upload" aria-hidden></i> Import
+						</button>
+					</span>
 				</div>
 				<table class={spriteClass} style={sprite}>
 					<tr>
