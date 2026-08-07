@@ -2189,9 +2189,9 @@ export const PS = new class extends PSModel {
 		case 'team':
 		case 'teambuilder':
 			return {
-				minWidth: 660,
-				width: 660,
-				maxWidth: 660,
+				minWidth: 700,
+				width: 700,
+				maxWidth: 700,
 			};
 		case 'battle': {
 			const sideBySide = !this.prefs.battlelayout ||
