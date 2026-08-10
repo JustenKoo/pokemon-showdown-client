@@ -576,6 +576,16 @@ export const Dex = new class implements ModdedDex {
 		const cost = FasherDraftPoints[species.name];
 		return cost === undefined ? null : cost;
 	}
+	/**
+	 * Fasher Draft League: formats a draft point cost for display.
+	 * cost 0 means "under suspect testing" - not on the format banlist, but
+	 * not priced yet either, so it's shown as free/ignorable rather than 0.
+	 */
+	formatDraftPoints(points: number | null): string {
+		if (points === null) return '—';
+		if (points === 0) return 'Suspect';
+		return `${points}`;
+	}
 
 	loadSpriteData(gen: 'xy' | 'bw') {
 		if (this.loadedSpriteData[gen]) return;
