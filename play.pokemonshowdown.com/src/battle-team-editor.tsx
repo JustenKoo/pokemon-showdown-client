@@ -3149,7 +3149,7 @@ class TeamEditorForm extends preact.Component<{
 								</span>}
 								{editor.team.isBox && editor.draftPlanMode && <span class="detailcell">
 									<label>Pts</label> {}
-									{Dex.formatDraftPoints(editor.draftPointsForSet(set))}
+									{editor.draftPointsForSet(set) ?? '—'}
 								</span>}
 								{editor.hpTypeMatters(set) && <span class="detailcell">
 									<label>H.P.</label> {}
