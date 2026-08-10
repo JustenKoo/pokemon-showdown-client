@@ -134,7 +134,7 @@ export class PSSearchResults extends preact.Component<{
 
 		if (this.props.draftPoints) {
 			const points = Dex.getDraftPoints(pokemon);
-			buf += `<span class="col bstcol"><em>Pts<br />${points === null ? '—' : points}</em></span>`;
+			buf += `<span class="col bstcol"><em>Pts<br />${Dex.formatDraftPoints(points)}</em></span>`;
 		}
 		buf += `</a></li>`;
 		return buf;

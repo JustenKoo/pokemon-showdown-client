@@ -576,6 +576,12 @@ export const Dex = new class implements ModdedDex {
 		const cost = FasherDraftPoints[species.name];
 		return cost === undefined ? null : cost;
 	}
+	/** Fasher Draft League: formats a draft point cost for display - unpriced species show as '—', banned ones (cost 999) as 'Banned'. */
+	formatDraftPoints(points: number | null): string {
+		if (points === null) return '—';
+		if (points >= 999) return 'Banned';
+		return `${points}`;
+	}
 
 	loadSpriteData(gen: 'xy' | 'bw') {
 		if (this.loadedSpriteData[gen]) return;
