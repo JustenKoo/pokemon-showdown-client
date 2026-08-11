@@ -1977,6 +1977,39 @@ class TeamTextbox extends preact.Component<{
 			copyButtonUsed: setTimeout(() => this.setState({ copyButtonUsed: undefined }), 3000),
 		});
 	};
+	/**
+	 * Ported from the old client (oldclient/client-teambuilder.js's
+	 * pokepasteExport) - PokePaste's /create endpoint takes a plain form
+	 * POST, so this needs a real <form> submission (not fetch - it's a
+	 * cross-origin, non-JSON POST that isn't meant to be read back by us,
+	 * just navigated to in a new tab).
+	 */
+	uploadToPokePaste = () => {
+		const team = this.textbox.value;
+		if (!team.trim()) {
+			PS.alert("Add a Pokémon to your team before uploading it!");
+			return;
+		}
+		const editor = this.editor;
+		const form = document.createElement('form');
+		form.method = 'post';
+		form.action = 'https://pokepast.es/create';
+		form.target = '_blank';
+		const addField = (name: string, value: string) => {
+			const input = document.createElement('input');
+			input.type = 'hidden';
+			input.name = name;
+			input.value = value;
+			form.appendChild(input);
+		};
+		addField('title', editor.team.name);
+		addField('paste', team);
+		addField('author', PS.user.name);
+		addField('notes', `Format: ${editor.format}`);
+		document.body.appendChild(form);
+		form.submit();
+		document.body.removeChild(form);
+	};
 	render() {
 		const editor = this.props.editor;
 		const statsDetailsOffset = editor.gen >= 3 ? 18 : -1;
@@ -1991,6 +2024,9 @@ class TeamTextbox extends preact.Component<{
 					) : (
 						<><i class="fa fa-copy" aria-hidden></i> Copy</>
 					)}
+				</button> {}
+				<button class="button" onClick={this.uploadToPokePaste}>
+					<i class="fa fa-upload" aria-hidden></i> Upload to PokePaste
 				</button>
 			</p>
 			<div class="teameditor-text">
