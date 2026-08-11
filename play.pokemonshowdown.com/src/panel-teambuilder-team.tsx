@@ -249,11 +249,6 @@ class TeamPanel extends PSRoomPanel<TeamRoom> {
 		ev.stopImmediatePropagation();
 	};
 
-	changePrivacyPref = (ev: Event) => {
-		PS.prefs.uploadprivacy = !(ev.currentTarget as HTMLInputElement).checked;
-		PS.prefs.save();
-		this.forceUpdate();
-	};
 	handleChangeFormat = (ev: Event) => {
 		const dropdown = ev.currentTarget as HTMLButtonElement;
 		const room = this.props.room;
@@ -358,7 +353,7 @@ class TeamPanel extends PSRoomPanel<TeamRoom> {
 				{!!(team.packedTeam && team.format.length > 4) && <p>
 					<button data-cmd="/validate" class="button"><i class="fa fa-check"></i> Validate</button>
 				</p>}
-				{!!(team.packedTeam || team.uploaded) && <p class="infobox" style="padding: 5px 8px">
+				{!!(team.uploaded || team.teamid) && <p class="infobox" style="padding: 5px 8px">
 					{team.uploadedPackedTeam && !team.uploaded ? <>
 						Uploading...
 					</> : team.uploaded ? <>
@@ -377,17 +372,6 @@ class TeamPanel extends PSRoomPanel<TeamRoom> {
 								Compare
 							</button>
 						</div>}
-					</> : !team.teamid ? <>
-						<label class="checkbox inline">
-							<input
-								name="teamprivacy" checked={!PS.prefs.uploadprivacy}
-								type="checkbox" onChange={this.changePrivacyPref}
-							/> Public
-						</label>
-						<button class="button exportbutton" onClick={this.uploadTeam}>
-							<i class="fa fa-upload"></i> Upload for
-							{PS.prefs.uploadprivacy ? ' shareable URL' : ' shareable/searchable URL'}
-						</button>
 					</> : <>
 						This is a disconnected team. This could be because you uploaded it
 						on a different account, or because you deleted or un-uploaded it on
