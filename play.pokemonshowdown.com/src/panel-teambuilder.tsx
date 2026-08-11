@@ -17,7 +17,16 @@ const ADD_FORMAT_FOLDER_VALUE = '+';
 const ADD_FOLDER_VALUE = '++';
 
 class TeambuilderRoom extends PSRoom {
-	readonly DEFAULT_FORMAT = Dex.modid;
+	// Fasher Draft League server: default new teams to our own format instead
+	// of the vanilla Gen 9 (uncategorized) folder. A getter (not a fixed
+	// field) because window.BattleFormats may not have loaded yet when this
+	// room is constructed - see the matching pattern/comment in TeamForm's
+	// render() in panel-mainmenu.tsx. Update this id each season.
+	get DEFAULT_FORMAT(): ID {
+		const localDefaultFormat = 'gen9championsfasherdraftleagueseason3' as ID;
+		if (window.BattleFormats?.[localDefaultFormat]) return localDefaultFormat;
+		return Dex.modid;
+	}
 
 	/**
 	 * - `""` - all
