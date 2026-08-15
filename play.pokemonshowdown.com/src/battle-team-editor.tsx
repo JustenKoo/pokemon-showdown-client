@@ -1938,7 +1938,12 @@ class TeamTextbox extends preact.Component<{
 			</span>
 			{editor.gen === 9 && !editor.disablesTera ? (
 				<span class="detailcell">
-					<label>Tera</label><PSIcon type={set.teraType || species.requiredTeraType || species.types[0]} />
+					<label>Tera</label>
+					{editor.team.isBox && editor.draftPlanMode && Dex.isTeraBanned(species) ? (
+						<em title="This Pokémon is Tera banned">Banned</em>
+					) : (
+						<PSIcon type={set.teraType || species.requiredTeraType || species.types[0]} />
+					)}
 				</span>
 			) : editor.hpTypeMatters(set) ? (
 				<span class="detailcell">
@@ -3181,7 +3186,11 @@ class TeamEditorForm extends preact.Component<{
 								</span>}
 								{editor.gen === 9 && !editor.disablesTera && <span class="detailcell">
 									<label>Tera</label> {}
-									<PSIcon type={set.teraType || species.requiredTeraType || species.types[0]} new={!editor.narrow} tera />
+									{editor.team.isBox && editor.draftPlanMode && Dex.isTeraBanned(species) ? (
+										<em title="This Pokémon is Tera banned">Banned</em>
+									) : (
+										<PSIcon type={set.teraType || species.requiredTeraType || species.types[0]} new={!editor.narrow} tera />
+									)}
 								</span>}
 								{editor.team.isBox && editor.draftPlanMode && <span class="detailcell">
 									<label>Pts</label> {}
@@ -4226,30 +4235,37 @@ class DetailsForm extends preact.Component<{
 						))}
 					</select></label>
 				</p>}
-				{editor.gen === 9 && !editor.disablesTera && <p>
-					<label class="label" title="Tera Type">
-						Tera Type: {}
-						{species.requiredTeraType && editor.formeLegality === 'normal' ? (
-							<select name="teratype" class="button cur" disabled><option>{species.requiredTeraType}</option></select>
-						) : (
-							<select
-								name="teratype" class="button base-select" onChange={this.changeTera}
-								value={set.teraType || species.requiredTeraType || species.types[0]}
-							>
-								<button><selectedcontent></selectedcontent></button>
-								{Dex.types.all().map(type => (
-									<option value={type.name}><PSIcon type={type.name} new tera /></option>
-								))}
-							</select>
-						)}
-					</label> {}
-					{editor.team.isBox && editor.draftPlanMode && <label class="checkbox inline">
-						<input
-							type="checkbox" name="teracaptain" checked={!!set.teraCaptain}
-							onInput={this.changeTeraCaptain} onChange={this.changeTeraCaptain}
-						/> Tera Captain
-					</label>}
-				</p>}
+				{editor.gen === 9 && !editor.disablesTera && (() => {
+					const teraBanned = editor.team.isBox && editor.draftPlanMode && Dex.isTeraBanned(species);
+					return <p>
+						<label class="label" title="Tera Type">
+							Tera Type: {}
+							{teraBanned ? (
+								<select name="teratype" class="button cur" disabled><option>Tera Banned</option></select>
+							) : species.requiredTeraType && editor.formeLegality === 'normal' ? (
+								<select name="teratype" class="button cur" disabled><option>{species.requiredTeraType}</option></select>
+							) : (
+								<select
+									name="teratype" class="button base-select" onChange={this.changeTera}
+									value={set.teraType || species.requiredTeraType || species.types[0]}
+								>
+									<button><selectedcontent></selectedcontent></button>
+									{Dex.types.all().map(type => (
+										<option value={type.name}><PSIcon type={type.name} new tera /></option>
+									))}
+								</select>
+							)}
+						</label> {}
+						{editor.team.isBox && editor.draftPlanMode && <label
+							class="checkbox inline" title={teraBanned ? "This Pokémon is Tera banned" : undefined}
+						>
+							<input
+								type="checkbox" name="teracaptain" checked={!teraBanned && !!set.teraCaptain} disabled={teraBanned}
+								onInput={this.changeTeraCaptain} onChange={this.changeTeraCaptain}
+							/> Tera Captain
+						</label>}
+					</p>;
+				})()}
 				{species.cosmeticFormes && <div>
 					<p><strong>Form:</strong></p>
 					<div style="display:flex;flex-wrap:wrap;gap:6px;max-width:400px;">

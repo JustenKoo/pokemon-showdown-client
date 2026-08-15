@@ -1504,6 +1504,20 @@ process.stdout.write("Building `data/moves,items,abilities,typechart,learnsets.j
 }
 
 /*********************************************************
+ * Build fasher-draft-tera-banlist.js
+ *
+ * Fasher Draft League: generated from the server repo's
+ * config/fasher-draft-tera-banlist.ts (via caches/pokemon-showdown), same
+ * as fasher-draft-points.js above.
+ *********************************************************/
+
+{
+	const teraBanlistModule = requireNoCache('../caches/pokemon-showdown/dist/config/fasher-draft-tera-banlist.js');
+	const buf = 'exports.FasherTeraBanlist = ' + es3stringify(teraBanlistModule.FasherTeraBanlist) + ';\n';
+	fs.writeFileSync('play.pokemonshowdown.com/data/fasher-draft-tera-banlist.js', buf);
+}
+
+/*********************************************************
  * Build learnsets.js
  *********************************************************/
 

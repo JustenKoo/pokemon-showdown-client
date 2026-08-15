@@ -587,6 +587,11 @@ export const Dex = new class implements ModdedDex {
 		return `${points}`;
 	}
 
+	/** Fasher Draft League: whether a species is banned from using Tera. */
+	isTeraBanned(species: Species): boolean {
+		return FasherTeraBanlist.includes(species.name);
+	}
+
 	loadSpriteData(gen: 'xy' | 'bw') {
 		if (this.loadedSpriteData[gen]) return;
 		this.loadedSpriteData[gen] = 1;
