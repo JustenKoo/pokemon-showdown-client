@@ -31,7 +31,11 @@ export class PSHeader extends preact.Component {
 
 		const favicon = document.querySelector<HTMLLinkElement>('#dynamic-favicon');
 		if (!favicon) return;
-		favicon.href = `${Dex.resourcePrefix}${notifying ? 'favicon-notify.ico' : 'favicon.ico'}`;
+		// Fasher Draft League: always our own local favicon, not
+		// Dex.resourcePrefix - that's the sprite/asset CDN prefix (still
+		// Smogon's, on purpose, to avoid self-hosting the whole sprite
+		// library), which has nothing to do with our own site branding.
+		favicon.href = notifying ? 'favicon-notify.ico' : 'favicon.ico';
 		this.faviconNotifying = notifying;
 	};
 	static toggleMute = (e: Event) => {
@@ -247,8 +251,8 @@ export class PSHeader extends preact.Component {
 			<div class="scrollable-part">
 				<img
 					class="logo"
-					src={`https://${Config.routes.client}/favicon-256.png`}
-					alt="Pokémon Showdown! (beta)"
+					src="favicon-256.png"
+					alt="Fasher Draft League"
 					width="50" height="50"
 				/>
 				<div class="tablist" role="tablist">
@@ -300,8 +304,8 @@ export class PSHeader extends preact.Component {
 					<li>
 						<img
 							class="logo"
-							src={`https://${Config.routes.client}/favicon-256.png`}
-							alt="Pokémon Showdown! (beta)"
+							src="favicon-256.png"
+							alt="Fasher Draft League"
 							width="48" height="48"
 						/>
 					</li>
