@@ -111,6 +111,21 @@ export class TeamEditorState extends PSModel {
 		this.search.find(this.search.query);
 		this.update();
 	}
+	/** Fasher Draft League: search filter - only show species eligible as a Tera Captain. */
+	teraCaptainFilterMode: '' | 'primary' | 'secondary' = '';
+	/** Fasher Draft League: applies teraCaptainFilterMode to the search's filters. */
+	applyTeraCaptainFilter() {
+		if (this.search.filters) {
+			this.search.filters = this.search.filters.filter(([type]) => type !== 'teracaptain');
+			if (!this.search.filters.length) this.search.filters = null;
+		}
+		if (this.teraCaptainFilterMode) {
+			(this.search.filters ??= []).push(['teracaptain', this.teraCaptainFilterMode]);
+		}
+		this.search.results = null;
+		this.search.find(this.search.query);
+		this.update();
+	}
 	formeLegality: 'normal' | 'hackmons' | 'custom' = 'normal';
 	abilityLegality: 'normal' | 'hackmons' = 'normal';
 	defaultLevel = 100;
@@ -1079,6 +1094,26 @@ function renderDraftPointsFilterControl(editor: TeamEditorState) {
 	</div>;
 }
 
+/**
+ * Fasher Draft League: search filter dropdown - Primary shows every
+ * non-Tera-banned species; Secondary additionally requires the species'
+ * draft cost to be 6 or lower (see Dex.isTeraBanned/getDraftPoints, and the
+ * matching 'teracaptain' case in battle-dex-search.ts's PokemonSearch#filter).
+ */
+function renderTeraCaptainFilterControl(editor: TeamEditorState) {
+	const setMode = (ev: Event) => {
+		editor.teraCaptainFilterMode = (ev.currentTarget as HTMLSelectElement).value as typeof editor.teraCaptainFilterMode;
+		editor.applyTeraCaptainFilter();
+	};
+	return <div class="tera-captain-filter" style="padding:4px 3px">
+		<label>Tera Captain: <select class="select" value={editor.teraCaptainFilterMode} onChange={setMode}>
+			<option value="">Any</option>
+			<option value="primary">Primary</option>
+			<option value="secondary">Secondary</option>
+		</select></label>
+	</div>;
+}
+
 export class TeamEditor extends preact.Component<{
 	team: Team, narrow?: boolean, onChange?: () => void, readOnly?: boolean,
 	children?: preact.ComponentChildren, resources?: preact.ComponentChildren,
@@ -1258,12 +1293,8 @@ export class TeamEditor extends preact.Component<{
 				</button></li>
 				{editor.team.isBox && editor.draftPlanMode && <li style="margin-top: 1px; margin-left: 8px;">
 					<span class="button disabled" style="cursor:default">
-						Remaining Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget}
-					</span>
-				</li>}
-				{editor.team.isBox && editor.draftPlanMode && <li style="margin-top: 1px; margin-left: 8px;">
-					<span class="button disabled" style="cursor:default">
-						Captain Points: <strong>{editor.remainingCaptainPoints()}</strong>/{FasherCaptainBudget}
+						Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget} {}
+						&middot; Captain: <strong>{editor.remainingCaptainPoints()}</strong>/{FasherCaptainBudget}
 					</span>
 				</li>}
 				<li class="teameditor-options" style="float: right; margin-top: 1px; margin-right: 8px;">
@@ -2138,6 +2169,7 @@ class TeamTextbox extends preact.Component<{
 									{!editor.narrow && <kbd>Esc</kbd>} <i class="fa fa-times" aria-hidden></i> Close
 								</button>
 								{editor.team.isBox && editor.draftPlanMode && renderDraftPointsFilterControl(editor)}
+								{editor.team.isBox && editor.draftPlanMode && renderTeraCaptainFilterControl(editor)}
 							</>}
 							search={editor.search}
 							draftPoints={editor.team.isBox && editor.draftPlanMode}
@@ -2445,8 +2477,10 @@ class TeamEditorForm extends preact.Component<{
 				<PSSearchResults
 					class="set-searchresults"
 					search={editor.search} hideFilters
-					prepend={type === 'pokemon' && editor.team.isBox && editor.draftPlanMode ?
-						renderDraftPointsFilterControl(editor) : undefined}
+					prepend={type === 'pokemon' && editor.team.isBox && editor.draftPlanMode ? <>
+						{renderDraftPointsFilterControl(editor)}
+						{renderTeraCaptainFilterControl(editor)}
+					</> : undefined}
 					draftPoints={type === 'pokemon' && editor.team.isBox && editor.draftPlanMode}
 					onSelect={this.selectResult}
 				>
@@ -3111,8 +3145,8 @@ class TeamEditorForm extends preact.Component<{
 				<div style="display:flex;justify-content:space-between;align-items:center">
 					<span>
 						{editor.team.isBox && editor.draftPlanMode && <>
-							Remaining Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget} {}
-							Captain Points: <strong>{editor.remainingCaptainPoints()}</strong>/{FasherCaptainBudget}
+							Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget} {}
+							&middot; Captain: <strong>{editor.remainingCaptainPoints()}</strong>/{FasherCaptainBudget}
 						</>}
 					</span>
 					<span>

@@ -1362,6 +1362,14 @@ class BattlePokemonSearch extends BattleTypedSearch<'pokemon'> {
 				if (points === null || points > Number(value)) return false;
 				break;
 			}
+			case 'teracaptain': {
+				if (Dex.isTeraBanned(species)) return false;
+				if (value === 'secondary') {
+					const points = Dex.getDraftPoints(species);
+					if (points === null || points > 6) return false;
+				}
+				break;
+			}
 			}
 		}
 		return true;
