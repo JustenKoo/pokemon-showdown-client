@@ -202,8 +202,14 @@ export class TeamEditorState extends PSModel {
 		}
 
 		const cost = Dex.getDraftPoints(species);
-		if (cost && cost > this.remainingDraftPoints()) {
-			return `${species.name} costs ${cost} points, but you only have ${this.remainingDraftPoints()} left.`;
+		// Exclude the target slot's own current cost from what's "spent" -
+		// swapping that slot's species should free up its points, not count
+		// them against the very swap that would free them.
+		const currentSet = this.sets[excludeSetIndex];
+		const currentCost = currentSet?.species ? (this.draftPointsForSet(currentSet) || 0) : 0;
+		const remaining = this.remainingDraftPoints() + currentCost;
+		if (cost && cost > remaining) {
+			return `${species.name} costs ${cost} points, but you only have ${remaining} left.`;
 		}
 		return null;
 	}
