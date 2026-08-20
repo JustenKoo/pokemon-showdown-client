@@ -132,12 +132,12 @@ export class TeamEditorState extends PSModel {
 		}
 		this.readonly = readonly;
 	}
-	/** Fasher Draft League: draft point cost of a set, including the Tera Captain multiplier. */
+	/** Fasher Draft League: draft point cost of a set, including the Tera Captain multiplier (either captain). */
 	draftPointsForSet(set: Dex.PokemonSet) {
 		const species = this.dex.species.get(set.species);
 		const cost = Dex.getDraftPoints(species);
 		if (cost === null) return null;
-		return set.teraCaptain ? Math.floor(cost * 1.5) : cost;
+		return (set.teraCaptain || set.teraCaptainSecondary) ? Math.floor(cost * 1.5) : cost;
 	}
 	/** Fasher Draft League: budget points remaining after the currently-drafted Pokemon. */
 	remainingDraftPoints() {
@@ -147,6 +147,20 @@ export class TeamEditorState extends PSModel {
 			spent += this.draftPointsForSet(set) || 0;
 		}
 		return FasherDraftBudget - spent;
+	}
+	/**
+	 * Fasher Draft League: of the main budget above, how much is left of the
+	 * separate 30-point cap for Tera Captain(s) - the post-tax cost of the
+	 * Primary Tera Captain plus the Secondary Tera Captain, if any.
+	 */
+	remainingCaptainPoints() {
+		let spent = 0;
+		for (const set of this.sets) {
+			if (!set.species) continue;
+			if (!set.teraCaptain && !set.teraCaptainSecondary) continue;
+			spent += this.draftPointsForSet(set) || 0;
+		}
+		return FasherCaptainBudget - spent;
 	}
 	setFormat(format: string) {
 		const team = this.team;
@@ -1245,6 +1259,11 @@ export class TeamEditor extends preact.Component<{
 				{editor.team.isBox && editor.draftPlanMode && <li style="margin-top: 1px; margin-left: 8px;">
 					<span class="button disabled" style="cursor:default">
 						Remaining Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget}
+					</span>
+				</li>}
+				{editor.team.isBox && editor.draftPlanMode && <li style="margin-top: 1px; margin-left: 8px;">
+					<span class="button disabled" style="cursor:default">
+						Captain Points: <strong>{editor.remainingCaptainPoints()}</strong>/{FasherCaptainBudget}
 					</span>
 				</li>}
 				<li class="teameditor-options" style="float: right; margin-top: 1px; margin-right: 8px;">
@@ -3092,7 +3111,8 @@ class TeamEditorForm extends preact.Component<{
 				<div style="display:flex;justify-content:space-between;align-items:center">
 					<span>
 						{editor.team.isBox && editor.draftPlanMode && <>
-							Remaining Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget}
+							Remaining Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget} {}
+							Captain Points: <strong>{editor.remainingCaptainPoints()}</strong>/{FasherCaptainBudget}
 						</>}
 					</span>
 					<span>
@@ -4060,8 +4080,21 @@ class DetailsForm extends preact.Component<{
 		const { set } = this.props;
 		if (target.checked) {
 			set.teraCaptain = true;
+			// a Pokemon can be the Primary or Secondary Tera Captain, not both
+			delete set.teraCaptainSecondary;
 		} else {
 			delete set.teraCaptain;
+		}
+		this.props.onChange();
+	};
+	changeTeraCaptainSecondary = (ev: Event) => {
+		const target = ev.currentTarget as HTMLInputElement;
+		const { set } = this.props;
+		if (target.checked) {
+			set.teraCaptainSecondary = true;
+			delete set.teraCaptain;
+		} else {
+			delete set.teraCaptainSecondary;
 		}
 		this.props.onChange();
 	};
@@ -4237,6 +4270,12 @@ class DetailsForm extends preact.Component<{
 				</p>}
 				{editor.gen === 9 && !editor.disablesTera && (() => {
 					const teraBanned = editor.team.isBox && editor.draftPlanMode && Dex.isTeraBanned(species);
+					// Fasher Draft League: Secondary Tera Captain is only offered
+					// for cheap Pokemon (6 pts or less, before the Tera tax below)
+					// - based on the Pokemon's own listed price, not whatever it
+					// currently costs with a captain tax already applied.
+					const draftCost = Dex.getDraftPoints(species);
+					const secondaryEligible = draftCost !== null && draftCost <= 6;
 					return <p>
 						<label class="label" title="Tera Type">
 							Tera Type: {}
@@ -4262,7 +4301,16 @@ class DetailsForm extends preact.Component<{
 							<input
 								type="checkbox" name="teracaptain" checked={!teraBanned && !!set.teraCaptain} disabled={teraBanned}
 								onInput={this.changeTeraCaptain} onChange={this.changeTeraCaptain}
-							/> Tera Captain
+							/> Primary Tera Captain
+						</label>} {}
+						{editor.team.isBox && editor.draftPlanMode && secondaryEligible && <label
+							class="checkbox inline" title={teraBanned ? "This Pokémon is Tera banned" : undefined}
+						>
+							<input
+								type="checkbox" name="teracaptainsecondary" checked={!teraBanned && !!set.teraCaptainSecondary}
+								disabled={teraBanned}
+								onInput={this.changeTeraCaptainSecondary} onChange={this.changeTeraCaptainSecondary}
+							/> Secondary Tera Captain
 						</label>}
 					</p>;
 				})()}

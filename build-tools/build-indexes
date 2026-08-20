@@ -405,6 +405,14 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 						species.tags.includes('Restricted Legendary') ? 'Restricted' :
 						species.nfe ? (species.prevo ? 'NFE' : 'LC') : 'Regular';
 				}
+				if ((isChampions || isNDChampions) && species.isNonstandard === 'CAP') {
+					// Fasher Draft League: CAP (Create-A-Pokemon) content isn't
+					// real Pokemon and isn't wanted in this teambuilder at all -
+					// matches the '-CAP' ban already added to the format's own
+					// ruleset in config/formats.ts, which is what actually keeps
+					// them out of battle; this is what keeps them out of search.
+					return 'Illegal';
+				}
 				if (species.tier === 'CAP' || species.tier === 'CAP NFE' || species.tier === 'CAP LC') {
 					return species.tier;
 				}
@@ -1499,7 +1507,8 @@ process.stdout.write("Building `data/moves,items,abilities,typechart,learnsets.j
 		points[species] = pointsModule.FasherDraftPointValues[species].cost;
 	}
 	const buf = 'exports.FasherDraftPoints = ' + es3stringify(points) + ';\n' +
-		'exports.FasherDraftBudget = ' + pointsModule.FASHER_DRAFT_BUDGET + ';\n';
+		'exports.FasherDraftBudget = ' + pointsModule.FASHER_DRAFT_BUDGET + ';\n' +
+		'exports.FasherCaptainBudget = ' + pointsModule.FASHER_CAPTAIN_BUDGET + ';\n';
 	fs.writeFileSync('play.pokemonshowdown.com/data/fasher-draft-points.js', buf);
 }
 

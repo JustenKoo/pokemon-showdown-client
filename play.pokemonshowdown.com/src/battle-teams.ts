@@ -40,8 +40,15 @@ export declare namespace Teams {
 		gigantamax?: boolean;
 		/** Defaults to the primary type */
 		teraType?: string;
-		/** Fasher Draft League: marks this set as the team's Tera Captain (1.5x draft point cost). Not persisted through pack/unpack. */
+		/** Fasher Draft League: marks this set as the team's Primary Tera Captain (1.5x draft point cost). Not persisted through pack/unpack. */
 		teraCaptain?: boolean;
+		/**
+		 * Fasher Draft League: marks this set as the team's Secondary Tera
+		 * Captain (1.5x draft point cost) - only offered for Pokemon costing
+		 * 6 points or less. Not persisted through pack/unpack, same as
+		 * teraCaptain above.
+		 */
+		teraCaptainSecondary?: boolean;
 	}
 	export interface PokemonSet extends Partial<FullPokemonSet> {
 		/** Defaults to species name (not including forme), like in games */
