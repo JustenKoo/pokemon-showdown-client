@@ -181,6 +181,32 @@ export class TeamEditorState extends PSModel {
 		}
 		return FasherCaptainBudget - spent;
 	}
+	/**
+	 * Fasher Draft League: returns an error message if `speciesName` can't be
+	 * added/changed to at `excludeSetIndex` right now - either it's already
+	 * elsewhere in the box, or it costs more than the budget has left - or
+	 * null if it's fine. Only applies to boxes in Draft Plan Mode.
+	 */
+	canAddSpecies(speciesName: string, excludeSetIndex: number): string | null {
+		if (!this.team.isBox || !this.draftPlanMode) return null;
+		const species = this.dex.species.get(speciesName);
+		if (!species.exists) return null;
+
+		for (let i = 0; i < this.sets.length; i++) {
+			if (i === excludeSetIndex) continue;
+			const otherSet = this.sets[i];
+			if (!otherSet?.species) continue;
+			if (toID(otherSet.species) === toID(species.name)) {
+				return `${species.name} is already in your Draft Plan box.`;
+			}
+		}
+
+		const cost = Dex.getDraftPoints(species);
+		if (cost && cost > this.remainingDraftPoints()) {
+			return `${species.name} costs ${cost} points, but you only have ${this.remainingDraftPoints()} left.`;
+		}
+		return null;
+	}
 	setFormat(format: string) {
 		const team = this.team;
 		const formatid = toID(format);
@@ -1850,6 +1876,11 @@ class TeamTextbox extends preact.Component<{
 				species: '',
 				moves: [],
 			};
+			const error = this.editor.canAddSpecies(name, focus.setIndex);
+			if (error) {
+				PS.alert(error);
+				break;
+			}
 			this.editor.changeSpecies(set, name);
 			this.replaceSet(focus.setIndex);
 			this.updateText(false, true);
@@ -2691,6 +2722,12 @@ class TeamEditorForm extends preact.Component<{
 		if (focus.type === 'pokemon') {
 			if (!canonical) return true;
 			const set = (editor.sets[focus.setIndex] ||= { species: '', moves: [] });
+			const error = editor.canAddSpecies(canonical, focus.setIndex);
+			if (error) {
+				PS.alert(error);
+				target.value = set.species;
+				return true;
+			}
 			editor.changeSpecies(set, canonical);
 			target.value = set.species;
 		} else {

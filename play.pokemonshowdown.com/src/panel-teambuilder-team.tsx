@@ -27,7 +27,14 @@ class TeamRoom extends PSRoom {
 				return this.errorReply(`You must select a format first.`);
 			}
 			this.send(`/utm ${this.team.packedTeam}`);
-			this.send(`/vtm ${this.team.format}`);
+			// Fasher Draft League: boxes are draft pools (10-12+ mons), not
+			// battle-ready teams, so /vtm's team-size gate and set-completeness
+			// nags don't apply - see server/fasher-draft-validate.ts.
+			if (this.team.isBox) {
+				this.send(`/draftvalidate ${this.team.format}`);
+			} else {
+				this.send(`/vtm ${this.team.format}`);
+			}
 		},
 	});
 	constructor(options: RoomOptions) {
