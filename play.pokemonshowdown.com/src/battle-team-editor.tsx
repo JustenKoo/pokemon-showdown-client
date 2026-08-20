@@ -4314,6 +4314,15 @@ class DetailsForm extends preact.Component<{
 					// currently costs with a captain tax already applied.
 					const draftCost = Dex.getDraftPoints(species);
 					const secondaryEligible = draftCost !== null && draftCost <= 6;
+					// Fasher Draft League: only one Pokemon may hold each captain
+					// slot. Rather than silently swapping the slot to whichever
+					// Pokemon's box is checked most recently, grey out the box for
+					// every other Pokemon and say who's holding it - switching is
+					// then a deliberate two-step (uncheck the old one, then check
+					// the new one), not an easy-to-misclick swap.
+					const showFilters = editor.team.isBox && editor.draftPlanMode;
+					const existingPrimary = showFilters ? editor.sets.find(s => s !== set && s.teraCaptain) : undefined;
+					const existingSecondary = showFilters ? editor.sets.find(s => s !== set && s.teraCaptainSecondary) : undefined;
 					return <p>
 						<label class="label" title="Tera Type">
 							Tera Type: {}
@@ -4333,23 +4342,32 @@ class DetailsForm extends preact.Component<{
 								</select>
 							)}
 						</label> {}
-						{editor.team.isBox && editor.draftPlanMode && <label
-							class="checkbox inline" title={teraBanned ? "This Pokémon is Tera banned" : undefined}
+						{showFilters && <label
+							class="checkbox inline"
+							title={teraBanned ? "This Pokémon is Tera banned" : undefined}
 						>
 							<input
-								type="checkbox" name="teracaptain" checked={!teraBanned && !!set.teraCaptain} disabled={teraBanned}
+								type="checkbox" name="teracaptain" checked={!teraBanned && !!set.teraCaptain}
+								disabled={teraBanned || !!existingPrimary}
 								onInput={this.changeTeraCaptain} onChange={this.changeTeraCaptain}
 							/> Primary Tera Captain
-						</label>} {}
-						{editor.team.isBox && editor.draftPlanMode && secondaryEligible && <label
-							class="checkbox inline" title={teraBanned ? "This Pokémon is Tera banned" : undefined}
+						</label>}
+						{showFilters && existingPrimary && <small>
+							{} {existingPrimary.name || existingPrimary.species} is already selected as your Primary Tera Captain
+						</small>} {}
+						{showFilters && secondaryEligible && <label
+							class="checkbox inline"
+							title={teraBanned ? "This Pokémon is Tera banned" : undefined}
 						>
 							<input
 								type="checkbox" name="teracaptainsecondary" checked={!teraBanned && !!set.teraCaptainSecondary}
-								disabled={teraBanned}
+								disabled={teraBanned || !!existingSecondary}
 								onInput={this.changeTeraCaptainSecondary} onChange={this.changeTeraCaptainSecondary}
 							/> Secondary Tera Captain
 						</label>}
+						{showFilters && secondaryEligible && existingSecondary && <small>
+							{} {existingSecondary.name || existingSecondary.species} is already selected as your Secondary Tera Captain
+						</small>}
 					</p>;
 				})()}
 				{species.cosmeticFormes && <div>
