@@ -40,13 +40,12 @@ export declare namespace Teams {
 		gigantamax?: boolean;
 		/** Defaults to the primary type */
 		teraType?: string;
-		/** Fasher Draft League: marks this set as the team's Primary Tera Captain (1.5x draft point cost). Not persisted through pack/unpack. */
+		/** Fasher Draft League: marks this set as the team's Primary Tera Captain (1.5x draft point cost). */
 		teraCaptain?: boolean;
 		/**
 		 * Fasher Draft League: marks this set as the team's Secondary Tera
 		 * Captain (1.5x draft point cost) - only offered for Pokemon costing
-		 * 6 points or less. Not persisted through pack/unpack, same as
-		 * teraCaptain above.
+		 * 6 points or less.
 		 */
 		teraCaptainSecondary?: boolean;
 	}
@@ -125,12 +124,21 @@ export const Teams = new class {
 			buf += `|${set.happiness !== undefined && set.happiness !== 255 ? set.happiness : ''}`;
 
 			if (set.pokeball || set.hpType || set.gigantamax ||
-				(set.dynamaxLevel !== undefined && set.dynamaxLevel !== 10) || set.teraType) {
+				(set.dynamaxLevel !== undefined && set.dynamaxLevel !== 10) || set.teraType ||
+				set.teraCaptain || set.teraCaptainSecondary) {
 				buf += `,${set.hpType || ''}`;
 				buf += `,${this.packName(set.pokeball || '')}`;
 				buf += `,${set.gigantamax ? 'G' : ''}`;
 				buf += `,${set.dynamaxLevel !== undefined && set.dynamaxLevel !== 10 ? set.dynamaxLevel : ''}`;
 				buf += `,${set.teraType || ''}`;
+				// Fasher Draft League: appended past the end of the format
+				// stock PS/the server parse (sim/teams.ts's own unpack stops
+				// at the 6th comma field) - safe to extend here since the
+				// server silently ignores anything past that when a team is
+				// actually submitted for battle. teraCaptain is a draft-plan
+				// annotation only, never a real battle mechanic.
+				buf += `,${set.teraCaptain ? 'C' : ''}`;
+				buf += `,${set.teraCaptainSecondary ? 'C2' : ''}`;
 			}
 		}
 
@@ -258,9 +266,9 @@ export const Teams = new class {
 			j = buf.indexOf(']', i);
 			let misc;
 			if (j < 0) {
-				if (i < buf.length) misc = buf.substring(i).split(',', 6);
+				if (i < buf.length) misc = buf.substring(i).split(',', 8);
 			} else {
-				if (i !== j) misc = buf.substring(i, j).split(',', 6);
+				if (i !== j) misc = buf.substring(i, j).split(',', 8);
 			}
 			if (misc) {
 				set.happiness = (misc[0] ? Number(misc[0]) : undefined);
@@ -269,6 +277,9 @@ export const Teams = new class {
 				set.gigantamax = !!misc[3] || undefined;
 				set.dynamaxLevel = (misc[4] ? Number(misc[4]) : undefined);
 				set.teraType = misc[5] || undefined;
+				// Fasher Draft League: see the matching comment in pack() above
+				set.teraCaptain = !!misc[6] || undefined;
+				set.teraCaptainSecondary = !!misc[7] || undefined;
 			}
 			i = j + 1;
 			if (j < 0 || i <= lastI) break;

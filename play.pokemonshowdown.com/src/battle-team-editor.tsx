@@ -4077,8 +4077,10 @@ class DetailsForm extends preact.Component<{
 	};
 	changeTeraCaptain = (ev: Event) => {
 		const target = ev.currentTarget as HTMLInputElement;
-		const { set } = this.props;
+		const { editor, set } = this.props;
 		if (target.checked) {
+			// only one Primary Tera Captain per team
+			for (const otherSet of editor.sets) delete otherSet.teraCaptain;
 			set.teraCaptain = true;
 			// a Pokemon can be the Primary or Secondary Tera Captain, not both
 			delete set.teraCaptainSecondary;
@@ -4089,8 +4091,10 @@ class DetailsForm extends preact.Component<{
 	};
 	changeTeraCaptainSecondary = (ev: Event) => {
 		const target = ev.currentTarget as HTMLInputElement;
-		const { set } = this.props;
+		const { editor, set } = this.props;
 		if (target.checked) {
+			// only one Secondary Tera Captain per team
+			for (const otherSet of editor.sets) delete otherSet.teraCaptainSecondary;
 			set.teraCaptainSecondary = true;
 			delete set.teraCaptain;
 		} else {
