@@ -152,7 +152,11 @@ export class TeamEditorState extends PSModel {
 		const species = this.dex.species.get(set.species);
 		const cost = Dex.getDraftPoints(species);
 		if (cost === null) return null;
-		return (set.teraCaptain || set.teraCaptainSecondary) ? Math.floor(cost * 1.5) : cost;
+		if (!set.teraCaptain && !set.teraCaptainSecondary) return cost;
+		// The Tera tax is normally floor(cost * 1.5), but that rounds a 1pt
+		// captain back down to 1 - effectively free. 1pt captains round up
+		// to 2 instead; every other cost still rounds down as usual.
+		return cost === 1 ? 2 : Math.floor(cost * 1.5);
 	}
 	/** Fasher Draft League: budget points remaining after the currently-drafted Pokemon. */
 	remainingDraftPoints() {
