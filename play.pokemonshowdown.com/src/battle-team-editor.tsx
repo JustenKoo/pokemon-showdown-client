@@ -3291,7 +3291,20 @@ class TeamEditorForm extends preact.Component<{
 								</span>}
 								{editor.team.isBox && editor.draftPlanMode && <span class="detailcell">
 									<label>Pts</label> {}
-									{Dex.formatDraftPoints(editor.draftPointsForSet(set))}
+									{(() => {
+										const totalCost = editor.draftPointsForSet(set);
+										const baseCost = Dex.getDraftPoints(species);
+										const isCaptain = !!set.teraCaptain || !!set.teraCaptainSecondary;
+										// Fasher Draft League: a Tera Captain's point total includes
+										// the 1.5x tax - show the breakdown (e.g. Great Tusk as a
+										// captain: "30 (20 + 10)") instead of just the taxed total.
+										// Skipped for Suspect (0, falsy) and unpriced (null) costs,
+										// where a breakdown wouldn't mean anything.
+										if (isCaptain && baseCost && totalCost !== null) {
+											return `${totalCost} (${baseCost} + ${totalCost - baseCost})`;
+										}
+										return Dex.formatDraftPoints(totalCost);
+									})()}
 								</span>}
 								{editor.hpTypeMatters(set) && <span class="detailcell">
 									<label>H.P.</label> {}

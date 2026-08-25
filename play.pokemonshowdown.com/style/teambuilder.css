@@ -287,25 +287,6 @@
 .tabbar.unpadded-tabbar li:first-child .button {
 	margin-left: 12px;
 }
-.tabbar.unpadded-tabbar {
-	/* Fasher Draft League: the Points/Captain status badge can get wide
-	   enough that it no longer fits on the same line as the Options/Draft
-	   Plan Mode buttons, which are positioned with `float: right`. A float
-	   drops to a new line whenever it doesn't fit next to preceding
-	   content, regardless of `white-space`/`overflow` on the container -
-	   those only govern how *text* wraps, not the float placement
-	   algorithm, so that alone can't fix this. Switching this row to flex
-	   (which computes `float` as `none` on its children per spec) removes
-	   floats from the equation entirely: every li becomes a normal flex
-	   item that simply stays on the one row in source order, and
-	   overflow-x here lets the whole row scroll horizontally if it's
-	   ever too wide to fit, instead of any item wrapping to its own line. */
-	display: flex;
-	flex-wrap: nowrap;
-	align-items: baseline;
-	overflow-x: auto;
-	white-space: nowrap;
-}
 .teamname {
 	margin: 10px 0 10px 0;
 }
