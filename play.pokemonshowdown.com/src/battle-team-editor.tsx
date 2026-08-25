@@ -1350,7 +1350,7 @@ export class TeamEditor extends preact.Component<{
 				</li>
 					{editor.team.isBox && <li style="float: right; margin-top: 1px; margin-right: 8px;">
 						<button
-							class={`button${editor.draftPlanMode ? ' cur' : ''}`} onClick={this.toggleDraftPlanMode}
+							class={`button button-first${editor.draftPlanMode ? ' cur' : ''}`} onClick={this.toggleDraftPlanMode}
 						>
 							Draft Plan Mode
 						</button>
