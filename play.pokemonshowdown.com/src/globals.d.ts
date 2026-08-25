@@ -19,8 +19,8 @@ declare const NonBattleGames: { [id: string]: string };
 declare const FasherDraftPoints: { [species: string]: number };
 /** Fasher Draft League: total points a player has to spend drafting a team. */
 declare const FasherDraftBudget: number;
-/** Fasher Draft League: of the total budget, the most that may be spent (post-tax) on Tera Captain(s). */
-declare const FasherCaptainBudget: number;
+/** Fasher Draft League: max base cost (before Tera tax) a Pokemon may have to be eligible as Secondary Tera Captain. No cap on the Primary. */
+declare const FasherSecondaryCaptainMaxCost: number;
 /** Fasher Draft League: species names banned from using Tera, generated from config/fasher-draft-tera-banlist.ts (server repo). */
 declare const FasherTeraBanlist: string[];
 

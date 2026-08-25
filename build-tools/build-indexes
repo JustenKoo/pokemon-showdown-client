@@ -1508,7 +1508,7 @@ process.stdout.write("Building `data/moves,items,abilities,typechart,learnsets.j
 	}
 	const buf = 'exports.FasherDraftPoints = ' + es3stringify(points) + ';\n' +
 		'exports.FasherDraftBudget = ' + pointsModule.FASHER_DRAFT_BUDGET + ';\n' +
-		'exports.FasherCaptainBudget = ' + pointsModule.FASHER_CAPTAIN_BUDGET + ';\n';
+		'exports.FasherSecondaryCaptainMaxCost = ' + pointsModule.FASHER_SECONDARY_CAPTAIN_MAX_COST + ';\n';
 	fs.writeFileSync('play.pokemonshowdown.com/data/fasher-draft-points.js', buf);
 }
 

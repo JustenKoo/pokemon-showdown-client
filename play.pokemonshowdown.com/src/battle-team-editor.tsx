@@ -167,19 +167,13 @@ export class TeamEditorState extends PSModel {
 		}
 		return FasherDraftBudget - spent;
 	}
-	/**
-	 * Fasher Draft League: of the main budget above, how much is left of the
-	 * separate 30-point cap for Tera Captain(s) - the post-tax cost of the
-	 * Primary Tera Captain plus the Secondary Tera Captain, if any.
-	 */
-	remainingCaptainPoints() {
-		let spent = 0;
-		for (const set of this.sets) {
-			if (!set.species) continue;
-			if (!set.teraCaptain && !set.teraCaptainSecondary) continue;
-			spent += this.draftPointsForSet(set) || 0;
-		}
-		return FasherCaptainBudget - spent;
+	/** Fasher Draft League: whether a Primary Tera Captain has been selected. */
+	hasPrimaryCaptain() {
+		return this.sets.some(set => set.teraCaptain);
+	}
+	/** Fasher Draft League: whether a Secondary Tera Captain has been selected. */
+	hasSecondaryCaptain() {
+		return this.sets.some(set => set.teraCaptainSecondary);
 	}
 	/**
 	 * Fasher Draft League: returns an error message if `speciesName` can't be
@@ -1330,7 +1324,10 @@ export class TeamEditor extends preact.Component<{
 				{editor.team.isBox && editor.draftPlanMode && <li style="margin-top: 1px; margin-left: 8px;">
 					<span class="button disabled" style="cursor:default">
 						Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget} {}
-						&middot; Captain: <strong>{editor.remainingCaptainPoints()}</strong>/{FasherCaptainBudget}
+						&middot; Primary Captain: {editor.hasPrimaryCaptain() ?
+							<i class="fa fa-check" aria-label="selected"></i> : <em>none</em>} {}
+						&middot; Secondary Captain: {editor.hasSecondaryCaptain() ?
+							<i class="fa fa-check" aria-label="selected"></i> : <em>none</em>}
 					</span>
 				</li>}
 				<li class="teameditor-options" style="float: right; margin-top: 1px; margin-right: 8px;">
@@ -3193,7 +3190,10 @@ class TeamEditorForm extends preact.Component<{
 					<span>
 						{editor.team.isBox && editor.draftPlanMode && <>
 							Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget} {}
-							&middot; Captain: <strong>{editor.remainingCaptainPoints()}</strong>/{FasherCaptainBudget}
+							&middot; Primary Captain: {editor.hasPrimaryCaptain() ?
+							<i class="fa fa-check" aria-label="selected"></i> : <em>none</em>} {}
+						&middot; Secondary Captain: {editor.hasSecondaryCaptain() ?
+							<i class="fa fa-check" aria-label="selected"></i> : <em>none</em>}
 						</>}
 					</span>
 					<span>
@@ -4356,11 +4356,13 @@ class DetailsForm extends preact.Component<{
 				{editor.gen === 9 && !editor.disablesTera && (() => {
 					const teraBanned = editor.team.isBox && editor.draftPlanMode && Dex.isTeraBanned(species);
 					// Fasher Draft League: Secondary Tera Captain is only offered
-					// for cheap Pokemon (6 pts or less, before the Tera tax below)
-					// - based on the Pokemon's own listed price, not whatever it
-					// currently costs with a captain tax already applied.
+					// for cheap Pokemon (FasherSecondaryCaptainMaxCost pts or less,
+					// before the Tera tax below) - based on the Pokemon's own
+					// listed price, not whatever it currently costs with a
+					// captain tax already applied. No such cap exists for the
+					// Primary - only the main draft budget limits that one.
 					const draftCost = Dex.getDraftPoints(species);
-					const secondaryEligible = draftCost !== null && draftCost <= 6;
+					const secondaryEligible = draftCost !== null && draftCost <= FasherSecondaryCaptainMaxCost;
 					// Fasher Draft League: only one Pokemon may hold each captain
 					// slot. Rather than silently swapping the slot to whichever
 					// Pokemon's box is checked most recently, grey out the box for
