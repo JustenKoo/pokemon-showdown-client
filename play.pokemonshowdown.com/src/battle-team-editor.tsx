@@ -1324,10 +1324,10 @@ export class TeamEditor extends preact.Component<{
 				{editor.team.isBox && editor.draftPlanMode && <li style="margin-top: 1px; margin-left: 8px;">
 					<span class="button disabled" style="cursor:default">
 						Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget} {}
-						&middot; Primary Captain: {editor.hasPrimaryCaptain() ?
-							<i class="fa fa-check" aria-label="selected"></i> : <em>none</em>} {}
-						&middot; Secondary Captain: {editor.hasSecondaryCaptain() ?
-							<i class="fa fa-check" aria-label="selected"></i> : <em>none</em>}
+						&middot; <abbr title="Primary Tera Captain selected?">P:</abbr> {}
+						{editor.hasPrimaryCaptain() ? <i class="fa fa-check" aria-label="yes"></i> : '—'} {}
+						<abbr title="Secondary Tera Captain selected?">S:</abbr> {}
+						{editor.hasSecondaryCaptain() ? <i class="fa fa-check" aria-label="yes"></i> : '—'}
 					</span>
 				</li>}
 				<li class="teameditor-options" style="float: right; margin-top: 1px; margin-right: 8px;">
@@ -3190,10 +3190,10 @@ class TeamEditorForm extends preact.Component<{
 					<span>
 						{editor.team.isBox && editor.draftPlanMode && <>
 							Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget} {}
-							&middot; Primary Captain: {editor.hasPrimaryCaptain() ?
-							<i class="fa fa-check" aria-label="selected"></i> : <em>none</em>} {}
-						&middot; Secondary Captain: {editor.hasSecondaryCaptain() ?
-							<i class="fa fa-check" aria-label="selected"></i> : <em>none</em>}
+							&middot; <abbr title="Primary Tera Captain selected?">P:</abbr> {}
+							{editor.hasPrimaryCaptain() ? <i class="fa fa-check" aria-label="yes"></i> : '—'} {}
+							<abbr title="Secondary Tera Captain selected?">S:</abbr> {}
+							{editor.hasSecondaryCaptain() ? <i class="fa fa-check" aria-label="yes"></i> : '—'}
 						</>}
 					</span>
 					<span>
