@@ -1322,11 +1322,11 @@ export class TeamEditor extends preact.Component<{
 					Import/Export
 				</button></li>
 				{editor.team.isBox && editor.draftPlanMode && <li style="margin-top: 1px; margin-left: 8px;">
-					<span class="button disabled" style="cursor:default">
+					<span class="button disabled" style="cursor:default;white-space:nowrap">
 						Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget} {}
-						&middot; <abbr title="Primary Tera Captain selected?">P:</abbr> {}
+						&middot; <abbr title="Primary Tera Captain selected?">PC:</abbr> {}
 						{editor.hasPrimaryCaptain() ? <i class="fa fa-check" aria-label="yes"></i> : '—'} {}
-						<abbr title="Secondary Tera Captain selected?">S:</abbr> {}
+						<abbr title="Secondary Tera Captain selected?">SC:</abbr> {}
 						{editor.hasSecondaryCaptain() ? <i class="fa fa-check" aria-label="yes"></i> : '—'}
 					</span>
 				</li>}
