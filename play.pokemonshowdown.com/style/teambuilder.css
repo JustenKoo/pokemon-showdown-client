@@ -365,13 +365,7 @@
 }
 
 .teameditor {
-	/* Fasher Draft League: bumped from 660px - the top tabbar's Points/
-	   Captain status badge (only shown for boxes in Draft Plan Mode) plus
-	   the Options/Draft Plan Mode buttons were right at the edge of
-	   fitting on one row at 660px, and selecting a Tera Captain (which
-	   swaps a plain "-" for a wider checkmark icon) was just enough to
-	   push the floated buttons onto their own row. */
-	max-width: 700px;
+	max-width: 660px;
 }
 .teameditor-options {
 	position: relative;

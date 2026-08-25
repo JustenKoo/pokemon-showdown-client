@@ -1323,7 +1323,7 @@ export class TeamEditor extends preact.Component<{
 				</button></li>
 				{editor.team.isBox && editor.draftPlanMode && <li style="margin-top: 1px; margin-left: 8px;">
 					<span class="button disabled" style="cursor:default;white-space:nowrap;display:inline-block">
-						Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget}{' '}&middot;{' '}<abbr title="Primary Tera Captain selected?">PC:</abbr>{' '}{editor.hasPrimaryCaptain() ? <i class="fa fa-check" aria-label="yes"></i> : '—'}{' '}<abbr title="Secondary Tera Captain selected?">SC:</abbr>{' '}{editor.hasSecondaryCaptain() ? <i class="fa fa-check" aria-label="yes"></i> : '—'}
+						Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget}{' '}&middot;{' '}<abbr title="Primary Tera Captain selected?">PC:</abbr>{' '}{editor.hasPrimaryCaptain() ? <i class="fa fa-check" aria-label="yes" style="display:inline-block"></i> : '—'}{' '}<abbr title="Secondary Tera Captain selected?">SC:</abbr>{' '}{editor.hasSecondaryCaptain() ? <i class="fa fa-check" aria-label="yes" style="display:inline-block"></i> : '—'}
 					</span>
 				</li>}
 				<li class="teameditor-options" style="float: right; margin-top: 1px; margin-right: 8px;">
@@ -2477,7 +2477,17 @@ class TeamEditorForm extends preact.Component<{
 						class={`button picontab${cur(i)}`} onClick={this.setFocus}
 						value={`set-${i}-${type}`}
 					>
-						<PSIcon pokemon={curSet} /><br />
+						<span style="position:relative;display:inline-block">
+							<PSIcon pokemon={curSet} />
+							{editor.team.isBox && editor.draftPlanMode && curSet.teraCaptain && <i
+								class="fa fa-star" aria-label="Primary Tera Captain" title="Primary Tera Captain"
+								style="position:absolute;top:-2px;right:-2px;color:#FFD700;text-shadow:0 0 2px #000,0 0 1px #000;font-size:12px"
+							></i>}
+							{editor.team.isBox && editor.draftPlanMode && curSet.teraCaptainSecondary && <i
+								class="fa fa-star" aria-label="Secondary Tera Captain" title="Secondary Tera Captain"
+								style="position:absolute;top:-2px;right:-2px;color:#C0C0C0;text-shadow:0 0 2px #000,0 0 1px #000;font-size:12px"
+							></i>}
+						</span><br />
 						{editor.getNickname(curSet)}
 					</button></li>)}
 					{editor.canAdd() && <li><button
