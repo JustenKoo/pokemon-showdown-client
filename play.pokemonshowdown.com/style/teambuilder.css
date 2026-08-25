@@ -287,6 +287,16 @@
 .tabbar.unpadded-tabbar li:first-child .button {
 	margin-left: 12px;
 }
+.tabbar.unpadded-tabbar {
+	/* Fasher Draft League: the Points/Captain status badge can get wide
+	   enough that it no longer fits on the same line as the floated
+	   Options/Draft Plan Mode buttons that follow it. Same fix already
+	   used for .team-focus-editor .tabbar above - force the whole row
+	   onto one line and let it scroll/overflow horizontally instead of
+	   wrapping (which pushed those buttons down onto their own row). */
+	overflow-x: auto;
+	white-space: nowrap;
+}
 .teamname {
 	margin: 10px 0 10px 0;
 }
