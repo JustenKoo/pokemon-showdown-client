@@ -3315,12 +3315,6 @@ class TeamEditorForm extends preact.Component<{
 										}
 										return Dex.formatDraftPoints(totalCost);
 									})()}
-									{(set.teraCaptain || set.teraCaptainSecondary) && <>{' '}<i
-										class="fa fa-star"
-										aria-label={set.teraCaptain ? "Primary Tera Captain" : "Secondary Tera Captain"}
-										title={set.teraCaptain ? "Primary Tera Captain" : "Secondary Tera Captain"}
-										style={`color:${set.teraCaptain ? '#FFD700' : '#C0C0C0'};text-shadow:0 0 2px #000,0 0 1px #000`}
-									></i></>}
 								</span>}
 								{editor.hpTypeMatters(set) && <span class="detailcell">
 									<label>H.P.</label> {}
@@ -3332,7 +3326,13 @@ class TeamEditorForm extends preact.Component<{
 								</span>}
 							</button>
 						</label>
-						<div>
+						<div style="display:flex;align-items:center;gap:4px">
+							{editor.team.isBox && editor.draftPlanMode && (set.teraCaptain || set.teraCaptainSecondary) && <i
+								class="fa fa-star"
+								aria-label={set.teraCaptain ? "Primary Tera Captain" : "Secondary Tera Captain"}
+								title={set.teraCaptain ? "Primary Tera Captain" : "Secondary Tera Captain"}
+								style={`color:${set.teraCaptain ? '#FFD700' : '#C0C0C0'};text-shadow:0 0 2px #000,0 0 1px #000`}
+							></i>}
 							{species.types.map(type => <><PSIcon type={type} new={!editor.narrow} /> </>)}
 						</div>
 					</div></td>
