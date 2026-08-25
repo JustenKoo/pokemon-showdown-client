@@ -3190,10 +3190,10 @@ class TeamEditorForm extends preact.Component<{
 					<span>
 						{editor.team.isBox && editor.draftPlanMode && <>
 							Points: <strong>{editor.remainingDraftPoints()}</strong>/{FasherDraftBudget} {}
-							&middot; <abbr title="Primary Tera Captain selected?">P:</abbr> {}
-							{editor.hasPrimaryCaptain() ? <i class="fa fa-check" aria-label="yes"></i> : '—'} {}
-							<abbr title="Secondary Tera Captain selected?">S:</abbr> {}
-							{editor.hasSecondaryCaptain() ? <i class="fa fa-check" aria-label="yes"></i> : '—'}
+							&middot; Primary Captain: {editor.hasPrimaryCaptain() ?
+							<i class="fa fa-check" aria-label="selected"></i> : <em>none</em>} {}
+						&middot; Secondary Captain: {editor.hasSecondaryCaptain() ?
+							<i class="fa fa-check" aria-label="selected"></i> : <em>none</em>}
 						</>}
 					</span>
 					<span>
