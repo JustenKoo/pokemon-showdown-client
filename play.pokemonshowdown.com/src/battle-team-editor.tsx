@@ -3266,19 +3266,11 @@ class TeamEditorForm extends preact.Component<{
 			<table class={`${spriteClass}${tintClass}`} style={sprite}>
 				<tr>
 					<td rowSpan={2} class="set-pokemon"><div class="border-collapse">
-						<span class="sprite-inner" style="position:relative">
+						<span class="sprite-inner">
 							<label class="label">
 								<span>Pokemon</span> {}
 								{this.renderInput(i, 'pokemon', set.species)}
 							</label>
-							{editor.team.isBox && editor.draftPlanMode && set.teraCaptain && <i
-								class="fa fa-star" aria-label="Primary Tera Captain" title="Primary Tera Captain"
-								style="position:absolute;top:2px;right:2px;color:#FFD700;text-shadow:0 0 2px #000,0 0 1px #000;font-size:14px"
-							></i>}
-							{editor.team.isBox && editor.draftPlanMode && set.teraCaptainSecondary && <i
-								class="fa fa-star" aria-label="Secondary Tera Captain" title="Secondary Tera Captain"
-								style="position:absolute;top:2px;right:2px;color:#C0C0C0;text-shadow:0 0 2px #000,0 0 1px #000;font-size:14px"
-							></i>}
 						</span>
 					</div></td>
 					<td colSpan={2} class="set-details"><div class="border-collapse">
@@ -3308,6 +3300,14 @@ class TeamEditorForm extends preact.Component<{
 									)}
 								</span>}
 								{editor.team.isBox && editor.draftPlanMode && <span class="detailcell">
+									{(set.teraCaptain || set.teraCaptainSecondary) && <div style="text-align:center">
+										<i
+											class="fa fa-star"
+											aria-label={set.teraCaptain ? "Primary Tera Captain" : "Secondary Tera Captain"}
+											title={set.teraCaptain ? "Primary Tera Captain" : "Secondary Tera Captain"}
+											style={`color:${set.teraCaptain ? '#FFD700' : '#C0C0C0'};text-shadow:0 0 2px #000,0 0 1px #000`}
+										></i>
+									</div>}
 									<label>Pts</label> {}
 									{(() => {
 										const totalCost = editor.draftPointsForSet(set);
