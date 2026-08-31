@@ -205,6 +205,19 @@ export class TeamEditorState extends PSModel {
 		if (cost && cost > remaining) {
 			return `${species.name} costs ${cost} points, but you only have ${remaining} left.`;
 		}
+
+		if (cost && cost >= FasherExpensiveMonMinCost) {
+			const otherExpensiveCount = this.sets.filter((otherSet, i) => {
+				if (i === excludeSetIndex || !otherSet?.species) return false;
+				return (Dex.getDraftPoints(this.dex.species.get(otherSet.species)) ?? 0) >= FasherExpensiveMonMinCost;
+			}).length;
+			if (otherExpensiveCount >= FasherMaxExpensiveMons) {
+				return (
+					`${species.name} costs ${cost} points, but your box already has ${otherExpensiveCount} Pokemon ` +
+					`worth ${FasherExpensiveMonMinCost}+ points (the max is ${FasherMaxExpensiveMons}).`
+				);
+			}
+		}
 		return null;
 	}
 	setFormat(format: string) {
