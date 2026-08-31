@@ -1242,6 +1242,7 @@ class RegisterPanel extends PSRoomPanel {
 		// why - noguestsecurity lets anyone claim any unprotected name,
 		// so this exists to let league members lock theirs down).
 		PS.send(`/pwlogin ${PS.user.name},${password}`);
+		PS.user.saveLogin(PS.user.name, password);
 		this.close();
 		PS.alert("This name is now password-protected on this server. Remember the password - you'll need it to log back in as this name.");
 

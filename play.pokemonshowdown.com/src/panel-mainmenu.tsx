@@ -131,6 +131,12 @@ export class MainMenuRoom extends PSRoom {
 			).then(res => {
 				if (!res?.username) {
 					PS.user.initializing = false;
+					// Fasher Draft League: the real Smogon login server's silent
+					// "are you already logged in" check above can never succeed
+					// here (no login server relationship) - this is the fallback
+					// that actually lets a refresh restore who you were, instead
+					// of resetting to an anonymous guest every time.
+					PS.user.restoreSavedLogin();
 					return;
 				}
 				// | , ; are not valid characters in names

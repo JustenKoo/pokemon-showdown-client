@@ -730,6 +730,7 @@ class PSUser extends PSStreamModel<PSLoginState | null> {
 		if (userid === this.userid) {
 			PS.send(`/trn ${name}`);
 			this.update({ success: true });
+			this.saveLogin(name);
 			return;
 		}
 		this.loggingIn = name;
@@ -747,6 +748,7 @@ class PSUser extends PSStreamModel<PSLoginState | null> {
 				this.loggingIn = null;
 				PS.send(`/trn ${name},0,`);
 				this.update({ success: true });
+				this.saveLogin(name);
 				return;
 			}
 			this.handleAssertion(name, res);
@@ -799,6 +801,40 @@ class PSUser extends PSStreamModel<PSLoginState | null> {
 		PS.send(`/pwlogin ${name},${password}`);
 		this.loggingIn = null;
 		this.update({ success: true });
+		this.saveLogin(name, password);
+	}
+	/**
+	 * Fasher Draft League: remembers a successful login (in localStorage) so
+	 * it can be silently restored on the next page load - see
+	 * restoreSavedLogin(). This exists because the normal "stay logged in
+	 * across a refresh" mechanism (the 'upkeep' query in panel-mainmenu.tsx's
+	 * challstr handler) relies on a real login server's signed cookie, which
+	 * this deployment has none of - without this, every refresh reset to an
+	 * anonymous guest with no way back except manually retyping the name (or
+	 * /pwlogin password) every single time.
+	 */
+	saveLogin(name: string, password?: string) {
+		try {
+			localStorage.setItem('fasher_savedlogin', JSON.stringify({ name, password }));
+		} catch {}
+	}
+	/**
+	 * Fasher Draft League: the other half of saveLogin() - called once from
+	 * the challstr handler in panel-mainmenu.tsx, only after the real
+	 * Smogon-login-server 'upkeep' check has already come back empty (i.e.
+	 * only as a fallback, never overriding a real account restore).
+	 */
+	restoreSavedLogin() {
+		let saved: { name: string, password?: string } | null = null;
+		try {
+			saved = JSON.parse(localStorage.getItem('fasher_savedlogin') || 'null');
+		} catch {}
+		if (!saved?.name) return;
+		if (saved.password) {
+			PS.send(`/pwlogin ${saved.name},${saved.password}`);
+		} else {
+			PS.send(`/trn ${saved.name},0,`);
+		}
 	}
 	updateLogin(update: PSLoginState) {
 		this.update(update);
