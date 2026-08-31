@@ -1062,9 +1062,22 @@ process.stdout.write("Building `data/teambuilder-tables.js`... ");
 		}
 	}
 	for (const id in learnsets) {
-		BattleTeambuilderTable['natdexchampions'].learnsets[id] = { ...learnsets[id] };
 		const species = Dex.mod('champions').species.get(id);
-		if (species.isNonstandard) continue;
+		// Fasher Draft League: CAP (Create-A-Pokemon) content is already
+		// excluded from the 'champions' mod's own learnset table above and
+		// from teambuilder species search generally (see the '-CAP' comment
+		// elsewhere in this file) - but this natdexchampions table used to
+		// unconditionally copy the CAP-inclusive base `learnsets` entry
+		// first and only gate the champions-specific *additions* on
+		// isNonstandard, so a CAP mon's base NatDex moveset still leaked
+		// through here. Checking specifically for 'CAP' (not any
+		// isNonstandard reason) matters: this table also carries plenty of
+		// legitimately isNonstandard:'Past' species (not in the current
+		// gen's regional dex on their own) that NatDex Mod is specifically
+		// meant to re-include - a blanket isNonstandard check here would
+		// silently gut the whole National Dex, not just exclude CAP.
+		if (species.isNonstandard === 'CAP') continue;
+		BattleTeambuilderTable['natdexchampions'].learnsets[id] = { ...learnsets[id] };
 		const learnset = ChampionsLearnsets[id].learnset;
 		if (!learnset) continue;
 		for (const moveid in learnset) {
