@@ -320,6 +320,53 @@ class TimerButton extends preact.Component<{ room: BattleRoom, top: number }> {
 	}
 };
 
+/**
+ * Fasher Draft League: keeps the screen from dimming/locking on mobile
+ * while a battle or replay panel is open. With no touch input at all
+ * during passive spectating (or even while playing, between your own
+ * turns), the OS treats the page as idle and blanks the screen after its
+ * normal timeout, right in the middle of a battle. Reference-counted since
+ * more than one battle panel can be mounted at once (e.g. a wide dual-panel
+ * layout) - only actually releases once none are left.
+ */
+let battleWakeLockCount = 0;
+let battleWakeLockSentinel: WakeLockSentinel | null = null;
+async function requestBattleWakeLockSentinel() {
+	if (!('wakeLock' in navigator) || battleWakeLockSentinel) return;
+	try {
+		battleWakeLockSentinel = await navigator.wakeLock.request('screen');
+		battleWakeLockSentinel.addEventListener('release', () => {
+			battleWakeLockSentinel = null;
+		});
+	} catch {
+		// Fails if the tab isn't visible yet, battery saver is on, the API
+		// isn't supported, etc. - harmless to just not have a wake lock then.
+		battleWakeLockSentinel = null;
+	}
+}
+function acquireBattleWakeLock() {
+	battleWakeLockCount++;
+	void requestBattleWakeLockSentinel();
+}
+function releaseBattleWakeLock() {
+	battleWakeLockCount = Math.max(0, battleWakeLockCount - 1);
+	if (battleWakeLockCount === 0 && battleWakeLockSentinel) {
+		void battleWakeLockSentinel.release();
+		battleWakeLockSentinel = null;
+	}
+}
+if (typeof document !== 'undefined') {
+	// The wake lock is automatically released by the browser whenever the
+	// tab is hidden (backgrounded, screen locked by the power button) - if a
+	// battle panel is still open when it becomes visible again, re-request
+	// it rather than leaving the screen unprotected until the panel remounts.
+	document.addEventListener('visibilitychange', () => {
+		if (document.visibilityState === 'visible' && battleWakeLockCount > 0) {
+			void requestBattleWakeLockSentinel();
+		}
+	});
+}
+
 class BattlePanel extends PSRoomPanel<BattleRoom> {
 	static readonly id = 'battle';
 	static readonly routes = ['battle-*', 'game-*'];
@@ -453,11 +500,13 @@ class BattlePanel extends PSRoomPanel<BattleRoom> {
 			battle.setHardcoreMode(true);
 		}
 		battle.subscribe(() => this.forceUpdate());
+		acquireBattleWakeLock();
 	}
 	override componentWillUnmount() {
 		const scene = this.props.room.battle?.scene as BattleScene | undefined;
 		if (this.base) scene?.tooltips.unlisten(this.base);
 		super.componentWillUnmount();
+		releaseBattleWakeLock();
 	}
 	battleHeight = 360;
 	updateLayout() {
