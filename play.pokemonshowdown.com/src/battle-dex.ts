@@ -878,17 +878,12 @@ export const Dex = new class implements ModdedDex {
 			// @ts-expect-error safe, but too lazy to cast
 			id = toID(pokemon.volatiles.formechange[1]);
 		}
-		let fainted = ((pokemon as Pokemon | ServerPokemon)?.fainted ?
-			`;opacity:.3;filter:grayscale(100%) brightness(.5)` : ``);
-
-		if (ZA_MEGA_SPRITES[id]?.icon) {
-			return `background:transparent url(${ZA_MEGA_SPRITES[id].icon}) no-repeat scroll 0px 0px / 40px 30px${fainted}`;
-		}
-
 		let num = this.getPokemonIconNum(id, pokemon?.gender === 'F', facingLeft);
 
 		let top = Math.floor(num / 12) * 30;
 		let left = (num % 12) * 40;
+		let fainted = ((pokemon as Pokemon | ServerPokemon)?.fainted ?
+			`;opacity:.3;filter:grayscale(100%) brightness(.5)` : ``);
 		return `background:transparent url(${Dex.resourcePrefix}sprites/pokemonicons-sheet.png?v22) no-repeat scroll -${left}px -${top}px${fainted}`;
 	}
 
@@ -972,7 +967,7 @@ export const Dex = new class implements ModdedDex {
 		if (!pokemon) return '';
 		const zaId = toID((pokemon as AnyObject).species || pokemon);
 		if (ZA_MEGA_SPRITES[zaId]?.icon) {
-			return `background-image:url(${ZA_MEGA_SPRITES[zaId].icon});background-position:center;background-repeat:no-repeat;background-size:contain`;
+			return `background-image:url(${ZA_MEGA_SPRITES[zaId].icon});background-position:left center;background-repeat:no-repeat;background-size:contain`;
 		}
 		const data = this.getTeambuilderSpriteData(pokemon, dex);
 		const shiny = (data.shiny ? '-shiny' : '');
