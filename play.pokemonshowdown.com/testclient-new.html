@@ -7,6 +7,9 @@
 	<link rel="stylesheet" href="style/battle.css" />
 	<link rel="stylesheet" href="style/client2.css" />
 	<link rel="stylesheet" href="style/utilichart.css" />
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap">
 	<meta name="robots" content="noindex" />
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
 	<!--[if lte IE 8]><script>
@@ -179,5 +182,21 @@
 	<script src="js/lib/color-thief.min.js"></script>
 
 	<script src="js/client-endload.js?"></script>
+
+	<!-- Showdex: only for accounts with dev mode unlocked (Settings > Toggle dev mode).
+	     Waits for the Preact client's PS global to finish starting up before injecting,
+	     since Showdex's own onload can fire before PS exists. -->
+	<script>
+		window.onload = () => {
+			if (localStorage.getItem('fasher-devmode') !== '1') return;
+			const showdexWait = setInterval(() => {
+				if (typeof window.PS?.startTime !== 'number') return;
+				clearInterval(showdexWait);
+				const showdexScript = document.createElement('script');
+				showdexScript.src = '/showdex/main.js';
+				document.body.appendChild(showdexScript);
+			}, 50);
+		};
+	</script>
 
 </body></html>

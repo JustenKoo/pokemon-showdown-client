@@ -676,6 +676,28 @@ class OptionsPanel extends PSRoomPanel {
 		PS.prefs.set('timestamps', { ...PS.prefs.timestamps, pms: timestamp || undefined });
 	};
 
+	// Fasher Draft League: soft client-side gate for Showdex (see testclient-new.html).
+	// This is NOT real security - anyone reading the bundle or poking at localStorage in
+	// devtools can bypass it. It only exists to keep the feature from casually surfacing
+	// for players who aren't looking for it.
+	toggleDevMode = () => {
+		const DEV_MODE_KEY = 'fasher-devmode';
+		const DEV_MODE_PASSWORD = 'CHANGE_ME'; // TODO: set your real password here
+		if (localStorage.getItem(DEV_MODE_KEY) === '1') {
+			localStorage.removeItem(DEV_MODE_KEY);
+			alert('Dev mode disabled. Refresh the page for this to fully take effect.');
+			return;
+		}
+		const pw = prompt('Enter the dev mode password:');
+		if (pw === null) return;
+		if (pw === DEV_MODE_PASSWORD) {
+			localStorage.setItem(DEV_MODE_KEY, '1');
+			alert('Dev mode enabled! Refresh the page to load it.');
+		} else {
+			alert('Incorrect password.');
+		}
+	};
+
 	handleOnChange = (ev: Event) => {
 		let elem = ev.currentTarget as HTMLInputElement;
 		let setting = elem.name;
@@ -873,9 +895,11 @@ class OptionsPanel extends PSRoomPanel {
 			</p>
 			<hr />
 			{PS.user.named ? <p class="buttonbar" style="text-align: right">
+				<button class="button" onClick={this.toggleDevMode}>Toggle dev mode</button> {}
 				<button class="button" data-href="login"><i class="fa fa-pencil" aria-hidden></i> Change name</button> {}
 				<button class="button" data-cmd="/logout"><i class="fa fa-power-off" aria-hidden></i> Log out</button>
 			</p> : <p class="buttonbar" style="text-align: right">
+				<button class="button" onClick={this.toggleDevMode}>Toggle dev mode</button> {}
 				<button class="button" data-href="login"><i class="fa fa-pencil" aria-hidden></i> Choose name</button>
 			</p> }
 		</div></PSPanelWrapper>;
