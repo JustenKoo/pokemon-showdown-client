@@ -682,7 +682,7 @@ class OptionsPanel extends PSRoomPanel {
 	// for players who aren't looking for it.
 	toggleDevMode = () => {
 		const DEV_MODE_KEY = 'fasher-devmode';
-		const DEV_MODE_PASSWORD = 'CHANGE_ME'; // TODO: set your real password here
+		const DEV_MODE_PASSWORD = 'fasherdev123';
 		if (localStorage.getItem(DEV_MODE_KEY) === '1') {
 			localStorage.removeItem(DEV_MODE_KEY);
 			alert('Dev mode disabled. Refresh the page for this to fully take effect.');
